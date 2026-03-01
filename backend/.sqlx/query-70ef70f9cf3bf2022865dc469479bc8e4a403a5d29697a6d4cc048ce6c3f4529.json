@@ -1,0 +1,74 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT id, hash, name, description, code,\n                   circuit_type as \"circuit_type: _\",\n                   created_by, is_public\n            FROM circuits\n            WHERE hash = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "hash",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "code",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "circuit_type: _",
+        "type_info": {
+          "Custom": {
+            "name": "circuit_type_",
+            "kind": {
+              "Enum": [
+                "circom",
+                "noir"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "created_by",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 7,
+        "name": "is_public",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "70ef70f9cf3bf2022865dc469479bc8e4a403a5d29697a6d4cc048ce6c3f4529"
+}

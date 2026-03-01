@@ -1,0 +1,112 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT DISTINCT\n                c.id, c.hash, c.name, c.description, c.code,\n                c.circuit_type as \"circuit_type: _\",\n                c.created_by, c.is_public, c.created_at,\n                d.contract_address as deployed_address,\n                d.deployment_type as \"deployment_type?: DeploymentType\",\n                pa.input_signals,\n                pa.input_descriptions\n            FROM circuits c\n            JOIN deployments d ON c.id = d.circuit_id AND d.status = 'confirmed'\n            LEFT JOIN proof_artifacts pa ON c.id = pa.circuit_id\n            WHERE c.is_public = true\n            ORDER BY c.created_at DESC\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "hash",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "code",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "circuit_type: _",
+        "type_info": {
+          "Custom": {
+            "name": "circuit_type_",
+            "kind": {
+              "Enum": [
+                "circom",
+                "noir"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "created_by",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 7,
+        "name": "is_public",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 8,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 9,
+        "name": "deployed_address",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 10,
+        "name": "deployment_type?: DeploymentType",
+        "type_info": {
+          "Custom": {
+            "name": "deployment_type_",
+            "kind": {
+              "Enum": [
+                "system",
+                "user"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 11,
+        "name": "input_signals",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 12,
+        "name": "input_descriptions",
+        "type_info": "Jsonb"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "3d8234f211b01e020f7123d7b3c096bdb51154af60977e3d9b5c424d084c6164"
+}

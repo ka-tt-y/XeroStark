@@ -1,0 +1,99 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT \n                p.id, p.circuit_id, \n                p.proof_data as \"proof_data!\",\n                p.public_inputs as \"public_inputs!\",\n                p.calldata, p.tx_hash, p.tx_status,\n                p.verification_status as \"verification_status: ProofVerificationStatus\",\n                p.shared_token, p.created_at,\n                c.name as circuit_name, c.hash as circuit_hash\n            FROM proofs p\n            JOIN circuits c ON p.circuit_id = c.id\n            WHERE p.created_by = $1\n            ORDER BY p.created_at DESC\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "circuit_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "proof_data!",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 3,
+        "name": "public_inputs!",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 4,
+        "name": "calldata",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "tx_hash",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "tx_status",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 7,
+        "name": "verification_status: ProofVerificationStatus",
+        "type_info": {
+          "Custom": {
+            "name": "proof_verification_status_",
+            "kind": {
+              "Enum": [
+                "pending",
+                "verified",
+                "failed"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "shared_token",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 9,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 10,
+        "name": "circuit_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 11,
+        "name": "circuit_hash",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "6c3e70ff7689652fe68a67e8512ea5a852152ea502763381a61389924865334e"
+}

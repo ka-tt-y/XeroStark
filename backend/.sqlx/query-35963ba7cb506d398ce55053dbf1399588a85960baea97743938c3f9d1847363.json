@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE proofs\n                SET tx_hash = $1,\n                    tx_status = CASE WHEN $1::varchar IS NULL THEN tx_status ELSE 'confirmed' END,\n                    verification_status = 'verified'::proof_verification_status_,\n                    created_by = COALESCE(created_by, $2)\n                WHERE id = $3\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "35963ba7cb506d398ce55053dbf1399588a85960baea97743938c3f9d1847363"
+}

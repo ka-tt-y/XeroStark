@@ -1,0 +1,157 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT \n                p.id, p.circuit_id,\n                p.proof_data as \"proof_data!\",\n                p.public_inputs as \"public_inputs!\",\n                p.calldata,\n                p.tx_hash, p.verification_status as \"verification_status: ProofVerificationStatus\",\n                p.created_at,\n                c.name as circuit_name, c.hash as circuit_hash,\n                c.circuit_type as \"circuit_type: CircuitType\",\n                c.description as circuit_description,\n                d.contract_address as verifier_address,\n                d.deployed_by_address,\n                p.created_by as prover_address,\n                pa.output_signals,\n                pa.public_input_signals,\n                pa.output_descriptions,\n                pa.public_input_descriptions,\n                pa.input_descriptions\n            FROM proofs p\n            JOIN circuits c ON p.circuit_id = c.id\n            LEFT JOIN deployments d ON c.id = d.circuit_id AND d.status = 'confirmed'\n            LEFT JOIN proof_artifacts pa ON c.id = pa.circuit_id\n            WHERE p.shared_token = $1\n            ORDER BY d.created_at DESC\n            LIMIT 1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "circuit_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "proof_data!",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 3,
+        "name": "public_inputs!",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 4,
+        "name": "calldata",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "tx_hash",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "verification_status: ProofVerificationStatus",
+        "type_info": {
+          "Custom": {
+            "name": "proof_verification_status_",
+            "kind": {
+              "Enum": [
+                "pending",
+                "verified",
+                "failed"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 8,
+        "name": "circuit_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 9,
+        "name": "circuit_hash",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 10,
+        "name": "circuit_type: CircuitType",
+        "type_info": {
+          "Custom": {
+            "name": "circuit_type_",
+            "kind": {
+              "Enum": [
+                "circom",
+                "noir"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 11,
+        "name": "circuit_description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 12,
+        "name": "verifier_address",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 13,
+        "name": "deployed_by_address",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 14,
+        "name": "prover_address",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 15,
+        "name": "output_signals",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 16,
+        "name": "public_input_signals",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 17,
+        "name": "output_descriptions",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 18,
+        "name": "public_input_descriptions",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 19,
+        "name": "input_descriptions",
+        "type_info": "Jsonb"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      false,
+      true,
+      true,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "78783ece664008050c8edd9a2b1aa30172841137afdeb361f6cfa9b7a51aba53"
+}

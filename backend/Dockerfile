@@ -35,16 +35,22 @@ RUN rm -rf src
 # Copy the actual source code
 COPY src/ src/
 COPY migrations/ migrations/
+COPY .sqlx/ .sqlx/
 
 # Touch main.rs so cargo rebuilds it
 RUN touch src/main.rs
 
 # Build the actual application
-# Use -j 1 to limit parallel jobs and prevent OOM on memory-constrained build servers
 ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
-RUN cargo build --release -j 2
+ENV SQLX_OFFLINE=true
+RUN cargo build --release
 
-# ─── Stage 2: Runtime image ───────────────────────────────────────
+# ─── Stage 2: Build garaga with Python 3.10 ───────────────────────
+FROM python:3.10-slim AS garaga-builder
+
+RUN pip install --no-cache-dir garaga
+
+# ─── Stage 3: Runtime image ───────────────────────────────────────
 FROM debian:bookworm-slim AS runtime
 
 RUN apt-get update && apt-get install -y \
@@ -56,14 +62,11 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Install circom in runtime (needed for circuit compilation)
-RUN git clone https://github.com/iden3/circom.git /tmp/circom \
-    && cd /tmp/circom \
-    && curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
-    && . /root/.cargo/env \
-    && cargo build --release \
-    && cp target/release/circom /usr/local/bin/circom \
-    && rm -rf /tmp/circom /root/.cargo /root/.rustup
+# Copy Python 3.10 from the garaga-builder stage
+COPY --from=garaga-builder /usr/local /usr/local
+
+# Copy circom from builder stage
+COPY --from=builder /usr/local/bin/circom /usr/local/bin/circom
 
 # Install snarkjs globally
 RUN npm install -g snarkjs
@@ -76,9 +79,8 @@ COPY --from=builder /app/target/release/backend /app/backend
 # Copy ptau file (required for circuit setup)
 COPY powersOfTau28_hez_final_15.ptau /app/powersOfTau28_hez_final_15.ptau
 
-# Copy package.json and install circomlib (needed for circuit includes)
-COPY package.json /app/package.json
-RUN npm install --production
+COPY package.json package-lock.json /app/
+RUN npm ci --production
 
 # Copy migrations for sqlx
 COPY migrations/ /app/migrations/

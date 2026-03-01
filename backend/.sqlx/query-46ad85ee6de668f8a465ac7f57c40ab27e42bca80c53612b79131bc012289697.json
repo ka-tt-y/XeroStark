@@ -1,0 +1,88 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT id, circuit_id as \"circuit_id!\", vk_json, wasm_path, zkey_path, witness_js_path,\n                   input_signals, output_signals, public_input_signals,\n                   output_descriptions, public_input_descriptions, input_descriptions\n            FROM proof_artifacts\n            WHERE circuit_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "circuit_id!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "vk_json",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "wasm_path",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "zkey_path",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "witness_js_path",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "input_signals",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 7,
+        "name": "output_signals",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 8,
+        "name": "public_input_signals",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 9,
+        "name": "output_descriptions",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 10,
+        "name": "public_input_descriptions",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 11,
+        "name": "input_descriptions",
+        "type_info": "Jsonb"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "46ad85ee6de668f8a465ac7f57c40ab27e42bca80c53612b79131bc012289697"
+}

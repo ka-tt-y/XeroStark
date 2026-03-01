@@ -1,0 +1,91 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT id, circuit_id, \n                   deployment_type as \"deployment_type: DeploymentType\",\n                   deployed_by_address, tx_hash, contract_address, \n                   class_hash, available_endpoints,\n                   status as \"status: DeploymentStatus\"\n            FROM deployments\n            WHERE circuit_id = $1 AND status = 'confirmed'\n            ORDER BY created_at DESC\n            LIMIT 1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "circuit_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "deployment_type: DeploymentType",
+        "type_info": {
+          "Custom": {
+            "name": "deployment_type_",
+            "kind": {
+              "Enum": [
+                "system",
+                "user"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "deployed_by_address",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "tx_hash",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "contract_address",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "class_hash",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 7,
+        "name": "available_endpoints",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 8,
+        "name": "status: DeploymentStatus",
+        "type_info": {
+          "Custom": {
+            "name": "deployment_status_",
+            "kind": {
+              "Enum": [
+                "pending",
+                "confirmed",
+                "failed"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "93d5a2274c03aa7d9ec2c2d9a46700cce72a652fbb50ccb2a0e78d10a5615de3"
+}

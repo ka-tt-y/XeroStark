@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE proofs\n            SET shared_token = $1\n            WHERE id = $2\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "85ad86e7cc618582c818f4651e034a5d3e5ed54f7d7e2d7d14d544ffa72fd75c"
+}

@@ -1,0 +1,72 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT id, hash, name, description, code, source_path,\n                   circuit_type as \"circuit_type: CircuitType\",\n                   created_at\n            FROM circuits\n            WHERE created_by IS NULL AND source_path IS NOT NULL\n            ORDER BY name ASC\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "hash",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "code",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "source_path",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "circuit_type: CircuitType",
+        "type_info": {
+          "Custom": {
+            "name": "circuit_type_",
+            "kind": {
+              "Enum": [
+                "circom",
+                "noir"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false,
+      true
+    ]
+  },
+  "hash": "2d97dc489a74c52e59bdaef2a3a58190ed55a3a8a5c4b17a9680afaf34339aa7"
+}

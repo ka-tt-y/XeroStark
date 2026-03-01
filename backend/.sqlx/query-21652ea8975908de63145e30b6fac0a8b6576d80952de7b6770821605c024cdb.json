@@ -1,0 +1,125 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT \n                d.id, d.circuit_id, \n                d.deployment_type as \"deployment_type: DeploymentType\",\n                d.deployed_by_address, d.tx_hash, d.contract_address,\n                d.class_hash, d.available_endpoints,\n                d.status as \"status: DeploymentStatus\",\n                d.created_at,\n                c.name as circuit_name, c.hash as circuit_hash,\n                c.circuit_type as \"circuit_type: CircuitType\"\n            FROM deployments d\n            JOIN circuits c ON d.circuit_id = c.id\n            WHERE d.deployed_by_address = $1 AND d.status = 'confirmed'\n            ORDER BY d.created_at DESC\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "circuit_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 2,
+        "name": "deployment_type: DeploymentType",
+        "type_info": {
+          "Custom": {
+            "name": "deployment_type_",
+            "kind": {
+              "Enum": [
+                "system",
+                "user"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "deployed_by_address",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "tx_hash",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "contract_address",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "class_hash",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 7,
+        "name": "available_endpoints",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 8,
+        "name": "status: DeploymentStatus",
+        "type_info": {
+          "Custom": {
+            "name": "deployment_status_",
+            "kind": {
+              "Enum": [
+                "pending",
+                "confirmed",
+                "failed"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 9,
+        "name": "created_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 10,
+        "name": "circuit_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 11,
+        "name": "circuit_hash",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 12,
+        "name": "circuit_type: CircuitType",
+        "type_info": {
+          "Custom": {
+            "name": "circuit_type_",
+            "kind": {
+              "Enum": [
+                "circom",
+                "noir"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "21652ea8975908de63145e30b6fac0a8b6576d80952de7b6770821605c024cdb"
+}

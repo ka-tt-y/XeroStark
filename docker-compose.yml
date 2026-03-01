@@ -57,7 +57,7 @@ services:
     volumes:
       - xergo_cache:/app/xergo_cache
     ports:
-      - "${BACKEND_PORT:-8000}:8000"
+      - "${BACKEND_PORT:-4000}:8000"
     networks:
       - xerostark
 
@@ -75,7 +75,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "${FRONTEND_PORT:-80}:80"
+      - "${FRONTEND_PORT:-8080}:80"
     networks:
       - xerostark
 

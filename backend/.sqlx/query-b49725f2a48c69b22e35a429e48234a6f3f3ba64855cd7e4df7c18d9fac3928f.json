@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO proofs (circuit_id, proof_data, public_inputs, verification_status, tx_hash, created_by)\n            VALUES ($1, $2, $3, 'verified'::proof_verification_status_, $4, $5)\n            RETURNING id\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Jsonb",
+        "Jsonb",
+        "Varchar",
+        "Varchar"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "b49725f2a48c69b22e35a429e48234a6f3f3ba64855cd7e4df7c18d9fac3928f"
+}

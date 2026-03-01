@@ -5,6 +5,8 @@ use serde_json::Value;
 use tokio::{fs, process::Command};
 use tracing::info;
 
+const GROQ_MODEL: &str = "openai/gpt-oss-20b";
+
 /// Extract input signal names from circom circuit code
 /// Returns a vector of signal names (e.g., ["a", "b"])
 pub fn extract_input_signals(circuit_code: &str) -> Vec<String> {
@@ -174,7 +176,7 @@ pub async fn generate_circuit_description(
     );
 
     let body = serde_json::json!({
-        "model": "llama-3.3-70b-versatile",
+        "model": GROQ_MODEL,
         "messages": [
             {
                 "role": "user",
@@ -237,7 +239,7 @@ pub async fn generate_input_descriptions(
     );
 
     let body = serde_json::json!({
-        "model": "llama-3.3-70b-versatile",
+        "model": GROQ_MODEL,
         "messages": [
             {
                 "role": "user",
@@ -328,7 +330,7 @@ pub async fn generate_output_descriptions(
     );
 
     let body = serde_json::json!({
-        "model": "llama-3.3-70b-versatile",
+        "model": GROQ_MODEL,
         "messages": [
             {
                 "role": "user",

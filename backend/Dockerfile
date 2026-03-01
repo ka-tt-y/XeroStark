@@ -45,28 +45,29 @@ ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 ENV SQLX_OFFLINE=true
 RUN cargo build --release
 
-# ─── Stage 2: Build garaga with Python 3.10 ───────────────────────
-FROM python:3.10-slim AS garaga-builder
+# ─── Stage 2: Runtime image
+FROM python:3.10-slim AS runtime
 
+# Install garaga
 RUN pip install --no-cache-dir garaga
 
-# ─── Stage 3: Runtime image ───────────────────────────────────────
-FROM debian:bookworm-slim AS runtime
-
+# Install runtime dependencies + Node.js 18
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     libssl3 \
     curl \
-    nodejs \
-    npm \
     git \
+    gnupg \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
-
-# Copy Python 3.10 from the garaga-builder stage
-COPY --from=garaga-builder /usr/local /usr/local
 
 # Copy circom from builder stage
 COPY --from=builder /usr/local/bin/circom /usr/local/bin/circom
+
+# Install scarb 
+RUN curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | bash -s -- -v 2.8.5
+ENV PATH="/root/.local/bin:${PATH}"
 
 # Install snarkjs globally
 RUN npm install -g snarkjs

@@ -41,6 +41,8 @@ pub struct AppState {
     /// `include` statements (e.g. circomlib) resolve correctly.
     pub circom_libs: Vec<PathBuf>,
     pub http_client: reqwest::Client,
+    /// Base URL of the frontend (for generating share links)
+    pub frontend_url: String,
 }
 
 impl AppState {
@@ -88,11 +90,15 @@ impl AppState {
             .build()
             .expect("Failed to build HTTP client");
 
+        let frontend_url = std::env::var("FRONTEND_URL")
+            .unwrap_or_else(|_| "http://localhost:5173".to_string());
+
         Self {
             cache_dir: Arc::new(Mutex::new(cache_dir)),
             ptau_path,
             circom_libs,
             http_client,
+            frontend_url,
         }
     }
 }

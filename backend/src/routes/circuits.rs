@@ -158,10 +158,11 @@ pub(crate) struct ShareProofResponse {
 pub async fn share_proof(
     proof_id: i32,
     db: &State<Arc<Db>>,
+    app_state: &State<AppState>,
 ) -> Result<Json<ShareProofResponse>, Status> {
     match db.generate_proof_share_token(proof_id).await {
         Ok(token) => {
-            let share_url = format!("http://localhost:5174/proof/{}", token);
+            let share_url = format!("{}/proof/{}", app_state.frontend_url, token);
             Ok(Json(ShareProofResponse {
                 success: true,
                 share_url,

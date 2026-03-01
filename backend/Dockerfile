@@ -65,8 +65,7 @@ RUN apt-get update && apt-get install -y \
 # Copy circom from builder stage
 COPY --from=builder /usr/local/bin/circom /usr/local/bin/circom
 
-# Install scarb 
-RUN curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | bash -s -- -v 2.8.5
+RUN curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | bash -s -- -v 2.14.0
 ENV PATH="/root/.local/bin:${PATH}"
 
 # Install snarkjs globally

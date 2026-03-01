@@ -1,5 +1,5 @@
 # ─── Stage 1: Build the Rust backend ───────────────────────────────
-FROM rust:1.84-bookworm AS builder
+FROM rust:1.93-bookworm AS builder
 
 # Install system dependencies for circom compilation and snarkjs
 RUN apt-get update && apt-get install -y \
@@ -40,7 +40,9 @@ COPY migrations/ migrations/
 RUN touch src/main.rs
 
 # Build the actual application
-RUN cargo build --release
+# Use -j 1 to limit parallel jobs and prevent OOM on memory-constrained build servers
+ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
+RUN cargo build --release -j 2
 
 # ─── Stage 2: Runtime image ───────────────────────────────────────
 FROM debian:bookworm-slim AS runtime

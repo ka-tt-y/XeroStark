@@ -317,14 +317,17 @@ pub async fn generate_output_descriptions(
     let signals_list = output_signals.join(", ");
     let prompt = format!(
         "You are an expert in zero-knowledge proof circuits written in Circom. \
-         Given the following Circom circuit named \"{}\" with public output signals: [{}], \
-         provide a brief one-line description for each output signal explaining what value \
-         it represents and how to interpret it when reading a proof's public signals. \
-         IMPORTANT: For boolean/flag signals that represent success or validity, always specify both cases clearly — \
-         e.g. \"1 if [condition], 0 otherwise\". Read the circuit logic carefully to determine \
-         exactly what value is assigned in each case. Do NOT say \"1 otherwise\" when the false case is 0. \
-         Respond ONLY with valid JSON — an object mapping each signal name to its description. \
-         Example format: {{\"out\": \"The product of the two input numbers\", \"valid\": \"1 if the value is within range, 0 otherwise\"}}\n\n\
+         Analyze the following Circom circuit named \"{}\" and describe what each output signal represents.\n\n\
+         Output signals to describe: [{}]\n\n\
+         For EACH output signal, carefully read the circuit code to understand:\n\
+         1. What computation produces this output value\n\
+         2. What the value means in the context of the circuit's purpose\n\
+         3. For numeric outputs: describe what the number represents (e.g., \"The hash of the input\", \"The sum of all inputs\")\n\
+         4. For boolean/flag outputs (0 or 1): describe exactly what condition makes it 1 vs 0 based on the actual circuit logic\n\n\
+         IMPORTANT: Do NOT give generic descriptions like \"1 if circuit executed successfully\". \
+         Instead, describe the SPECIFIC condition from the circuit code (e.g., \"1 if age >= 18, 0 otherwise\").\n\n\
+         Respond ONLY with valid JSON — an object mapping each signal name to its description.\n\
+         Example: {{\"hash\": \"The Poseidon hash of the secret input\", \"isAdult\": \"1 if the provided age is 18 or older, 0 otherwise\"}}\n\n\
          ```circom\n{}\n```",
         circuit_name, signals_list, circuit_code
     );
@@ -337,7 +340,7 @@ pub async fn generate_output_descriptions(
                 "content": prompt
             }
         ],
-        "max_tokens": 300,
+        "max_tokens": 500,
         "temperature": 0.0
     });
 

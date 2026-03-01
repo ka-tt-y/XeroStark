@@ -1,0 +1,511 @@
+@import "tailwindcss";
+
+@theme {
+  /* Custom Colors */
+  --color-primary: #8b5cf6;
+  --color-primary-dark: #7c3aed;
+  --color-primary-light: #a78bfa;
+  
+  --color-dark-900: #0f0f1e;
+  --color-dark-800: #1a1a2e;
+  --color-dark-700: #25253e;
+  --color-dark-600: #2d2d44;
+  
+  --color-accent-blue: #3b82f6;
+  --color-accent-purple: #8b5cf6;
+  --color-accent-pink: #ec4899;
+}
+
+/* Base Styles */
+* {
+  border-color: rgb(55 65 81);
+}
+
+body {
+  background-color: var(--color-dark-900);
+  color: rgb(243 244 246);
+  -webkit-font-smoothing: antialiased;
+}
+
+body.light {
+  background-color: rgb(249 250 251);
+  color: rgb(17 24 39);
+}
+
+/* Button Styles */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-dark-900), 0 0 0 4px var(--color-primary);
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.btn-secondary {
+  background-color: var(--color-dark-700);
+  color: rgb(243 244 246);
+  border: 1px solid rgb(75 85 99);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-dark-600);
+}
+
+.btn-outline {
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn-outline:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+/* Card Styles */
+.card {
+  background-color: var(--color-dark-800);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(55, 65, 81, 0.5);
+  padding: 1.5rem;
+  transition: all 0.2s;
+}
+
+.card-hover {
+  background-color: var(--color-dark-800);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(55, 65, 81, 0.5);
+  padding: 1.5rem;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.card-hover:hover {
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.1);
+}
+
+/* Input Styles */
+.input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: var(--color-dark-700);
+  border: 1px solid rgb(75 85 99);
+  border-radius: 0.5rem;
+  color: rgb(243 244 246);
+  transition: all 0.2s;
+}
+
+.input::placeholder {
+  color: rgb(156 163 175);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
+/* Container */
+.container-custom {
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-custom {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-custom {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(to right, var(--color-primary-light), var(--color-primary), var(--color-accent-pink));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Light mode overrides */
+.light .card,
+.light .card-hover {
+  background-color: white;
+  border-color: rgb(229 231 235);
+}
+
+.light .card-hover:hover {
+  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.05);
+}
+
+.light .input {
+  background-color: white;
+  border-color: rgb(209 213 219);
+  color: rgb(17 24 39);
+}
+
+.light .input::placeholder {
+  color: rgb(107 114 128);
+}
+
+.light .btn-secondary {
+  background-color: rgb(243 244 246);
+  color: rgb(17 24 39);
+  border-color: rgb(209 213 219);
+}
+
+.light .btn-secondary:hover {
+  background-color: rgb(229 231 235);
+}
+/* Light Mode - Header */
+.light header {
+  background-color: rgba(255, 255, 255, 0.8);
+  border-color: rgb(229 231 235);
+}
+
+.light header a {
+  color: rgb(75 85 99);
+}
+
+.light header a:hover {
+  color: rgb(17 24 39);
+}
+
+.light header .text-white {
+  color: rgb(17 24 39) !important;
+}
+
+.light header .text-gray-300 {
+  color: rgb(75 85 99) !important;
+}
+
+/* Light Mode - Hero Section */
+.light .bg-dark-800\/50 {
+  background-color: rgba(255, 255, 255, 0.5) !important;
+  border-color: rgb(229 231 235) !important;
+}
+
+.light .text-gray-300 {
+  color: rgb(75 85 99);
+}
+
+.light .text-gray-400 {
+  color: rgb(107 114 128);
+}
+
+.light .text-gray-500 {
+  color: rgb(156 163 175);
+}
+
+.light .text-white {
+  color: rgb(17 24 39);
+}
+
+/* Light Mode - Stats Icons */
+.light .bg-accent-blue\/20 {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.light .bg-accent-pink\/20 {
+  background-color: rgba(236, 72, 153, 0.1);
+}
+
+.light .bg-primary\/20 {
+  background-color: rgba(139, 92, 246, 0.1);
+}
+
+/* Light Mode - Code Viewer */
+.light .bg-dark-900\/70 {
+  background-color: rgb(243 244 246);
+  border-color: rgb(229 231 235);
+}
+
+.light .bg-dark-900\/70 code,
+.light .bg-dark-900\/70 pre {
+  color: rgb(17 24 39);
+}
+
+/* Light Mode - Featured Section */
+.light .bg-dark-800\/30 {
+  background-color: rgb(249 250 251);
+}
+
+/* Light Mode - Theme Toggle Button */
+.light button[aria-label="Toggle theme"] {
+  background-color: rgb(243 244 246);
+}
+
+.light button[aria-label="Toggle theme"]:hover {
+  background-color: rgb(229 231 235);
+}
+
+/* Light Mode - Spotlight Effects */
+.light .bg-purple-600 {
+  background-color: rgb(168, 85, 247);
+  opacity: 0.05;
+}
+
+.light .bg-blue-600 {
+  background-color: rgb(59, 130, 246);
+  opacity: 0.05;
+}
+
+/* Light Mode - Spotlight Effects */
+.light .bg-purple-600 {
+  background-color: rgb(169, 85, 247);
+  opacity: 0.2 !important;
+}
+
+.light .bg-blue-600 {
+  background-color: rgb(59, 130, 246);
+  opacity: 0.1 !important;
+}
+
+/* Docs Page - Prose Styles */
+.prose-doc h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 1rem;
+  margin-top: 0;
+}
+
+.prose-doc h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.prose-doc h3:first-child {
+  margin-top: 0;
+}
+
+.prose-doc h2 + h3 {
+  margin-top: 1rem;
+}
+
+.prose-doc p {
+  color: rgb(156 163 175);
+  line-height: 1.75;
+  margin-bottom: 1rem;
+  font-size: 0.9375rem;
+}
+
+.prose-doc ul,
+.prose-doc ol {
+  color: rgb(156 163 175);
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+  font-size: 0.9375rem;
+}
+
+.prose-doc ul {
+  list-style-type: disc;
+}
+
+.prose-doc ol {
+  list-style-type: decimal;
+}
+
+.prose-doc li {
+  margin-bottom: 0.5rem;
+  line-height: 1.75;
+}
+
+.prose-doc code {
+  background-color: var(--color-dark-700);
+  color: var(--color-primary-light);
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.prose-doc pre {
+  background-color: var(--color-dark-900);
+  border: 1px solid rgba(55, 65, 81, 0.5);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.prose-doc pre code {
+  background-color: transparent;
+  padding: 0;
+  font-size: 0.8125rem;
+  color: rgb(209 213 219);
+}
+
+.prose-doc strong {
+  color: white;
+  font-weight: 600;
+}
+
+.prose-doc a {
+  color: var(--color-primary-light);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.prose-doc a:hover {
+  color: var(--color-primary);
+}
+
+/* API Endpoint Blocks */
+.api-endpoint {
+  background-color: var(--color-dark-700);
+  border: 1px solid rgba(55, 65, 81, 0.5);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.api-endpoint code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 0.875rem;
+  background-color: transparent;
+  padding: 0;
+  color: var(--color-primary-light);
+}
+
+.api-endpoint .method {
+  font-weight: 700;
+  margin-right: 0.5rem;
+}
+
+.api-endpoint .method.get { color: rgb(52, 211, 153); }
+.api-endpoint .method.post { color: rgb(96, 165, 250); }
+.api-endpoint .method.put { color: rgb(251, 191, 36); }
+.api-endpoint .method.delete { color: rgb(248, 113, 113); }
+
+.api-endpoint .path {
+  color: rgb(209 213 219);
+}
+
+.api-endpoint .desc {
+  color: rgb(156 163 175);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* Light Mode - Footer */
+.light footer {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgb(229 231 235) !important;
+}
+
+.light footer .text-white {
+  color: rgb(17 24 39) !important;
+}
+
+.light footer .text-gray-400 {
+  color: rgb(107 114 128) !important;
+}
+
+.light footer .text-gray-500 {
+  color: rgb(156 163 175) !important;
+}
+
+.light footer .bg-dark-800 {
+  background-color: rgb(243 244 246);
+  border-color: rgb(229 231 235);
+}
+
+/* Light Mode - Docs Page */
+.light .prose-doc h2 {
+  color: rgb(17 24 39);
+}
+
+.light .prose-doc h3 {
+  color: rgb(17 24 39);
+}
+
+.light .prose-doc p,
+.light .prose-doc li {
+  color: rgb(75 85 99);
+}
+
+.light .prose-doc strong {
+  color: rgb(17 24 39);
+}
+
+.light .prose-doc code {
+  background-color: rgb(243 244 246);
+  color: var(--color-primary-dark);
+}
+
+.light .prose-doc pre {
+  background-color: rgb(249 250 251);
+  border-color: rgb(229 231 235);
+}
+
+.light .prose-doc pre code {
+  color: rgb(55 65 81);
+}
+
+.light .api-endpoint {
+  background-color: rgb(249 250 251);
+  border-color: rgb(229 231 235);
+}
+
+.light .api-endpoint .path {
+  color: rgb(55 65 81);
+}
+
+.light .api-endpoint .desc {
+  color: rgb(107 114 128);
+}
+
+/* Light Mode - Docs Sidebar */
+.light .bg-dark-800 {
+  background-color: rgb(249 250 251);
+  border-color: rgb(229 231 235);
+}
+
+.light .border-gray-800 {
+  border-color: rgb(229 231 235);
+}
+
+/* Light Mode - Tags / Badges */
+.light .bg-dark-700 {
+  background-color: rgb(243 244 246);
+}
+
+.light .border-gray-700 {
+  border-color: rgb(229 231 235);
+}
+
+/* Light Mode - Green status */
+.light .bg-green-500\/20 {
+  background-color: rgba(34, 197, 94, 0.1);
+}
+
+/* Light Mode - Yellow status */
+.light .bg-yellow-500\/20 {
+  background-color: rgba(234, 179, 8, 0.1);
+}

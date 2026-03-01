@@ -1,0 +1,7 @@
+target/
+xergo_cache/
+.env
+.secrets
+.git
+*.ptau
+!powersOfTau28_hez_final_15.ptau

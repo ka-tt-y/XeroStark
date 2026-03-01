@@ -1,0 +1,33 @@
+[package]
+name = "backend"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+rocket = { version = "0.5.0-rc.3", features = ["json"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sqlx = { version = "0.6", features = ["runtime-tokio-rustls", "postgres", "macros", "chrono", "json"] }
+dotenv = "0.15"
+uuid = { version = "1", features = ["v4"] }
+bcrypt = "0.12"
+multipart = "0.18"
+sha2 = { version = "0.10.9", features = ["std"] }
+dashmap = { version = "6.1.0", features = ["serde"] }
+reqwest = { version = "0.11.22", features = ["json"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
+starknet-rust ={ version = "0.18.0"}
+garaga_rs = { git = "https://github.com/keep-starknet-strange/garaga.git", tag = "v1.0.1", features = ["wasm"] }
+cairo-rs ={ version = "0.21.5"}
+regex = { version = "1.12.2"}
+ipfs-api-backend-hyper = "0.6"
+chrono ={ version = "0.4", features = ["serde"]}
+base64 = "0.22.1"
+rand = "0.8"
+glob = "0.3"
+
+[patch.crates-io]
+size-of = { git = "https://github.com/Ukko-Ylijumala/size-of" }
+

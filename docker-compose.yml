@@ -1,0 +1,90 @@
+services:
+  # ─── PostgreSQL Database ──────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-xerostark}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      POSTGRES_DB: ${DB_NAME:-xerostark}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    ports:
+      - "${DB_EXTERNAL_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-xerostark} -d ${DB_NAME:-xerostark}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - xerostark
+
+  # ─── Rust Backend (Rocket) ────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Database
+      DB_USER: ${DB_USER:-xerostark}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: ${DB_NAME:-xerostark}
+      DATABASE_URL: postgres://${DB_USER:-xerostark}:${DB_PASSWORD}@db:5432/${DB_NAME:-xerostark}
+
+      # Rocket
+      ROCKET_ADDRESS: "0.0.0.0"
+      ROCKET_PORT: "8000"
+
+      # Starknet
+      SEPOLIA_ACCOUNT_PRIVATE_KEY: ${SEPOLIA_ACCOUNT_PRIVATE_KEY}
+      SEPOLIA_ACCOUNT_ADDRESS: ${SEPOLIA_ACCOUNT_ADDRESS}
+      SEPOLIA_RPC_URL: ${SEPOLIA_RPC_URL}
+      API_KEY: ${API_KEY}
+      CHAIN_ID: ${CHAIN_ID}
+
+      # PTAU path inside container
+      PTAU_PATH: /app/powersOfTau28_hez_final_15.ptau
+
+      # External services
+      AVNU_PAYMASTER_API_KEY: ${AVNU_PAYMASTER_API_KEY}
+    volumes:
+      - xergo_cache:/app/xergo_cache
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    networks:
+      - xerostark
+
+  # ─── React Frontend (nginx) ──────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # At build time, set the API URL to the production domain or ALB URL.
+        # In production behind nginx reverse proxy, API calls go through /api/
+        # so this can be left as a relative path.
+        VITE_API_URL: ${VITE_API_URL:-}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    networks:
+      - xerostark
+
+volumes:
+  pgdata:
+    driver: local
+  xergo_cache:
+    driver: local
+
+networks:
+  xerostark:
+    driver: bridge

@@ -1,0 +1,2 @@
+# IMPORTANT!!!!!!
+- NEVER EVER!!!!!!! remove part of my code becuase you could not solve an error. If you cannot solve an error, leave the code as is and add a comment explaining the issue and possible solutions.

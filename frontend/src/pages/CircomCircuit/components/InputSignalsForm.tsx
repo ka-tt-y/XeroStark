@@ -7,6 +7,8 @@ interface InputSignalsFormProps {
 	loading: boolean;
 	onInputChange: (signal: string, value: string) => void;
 	onSubmit: () => void;
+	autoFilledSignals?: Record<string, string>; // signal -> display label e.g. "523 STRK from wallet"
+	balanceFetching?: boolean;
 }
 
 const InputSignalsForm: React.FC<InputSignalsFormProps> = ({
@@ -16,6 +18,8 @@ const InputSignalsForm: React.FC<InputSignalsFormProps> = ({
 	loading,
 	onInputChange,
 	onSubmit,
+	autoFilledSignals,
+	balanceFetching,
 }) => (
 	<div className="card p-0 overflow-hidden">
 		<div className="px-5 py-4 border-b border-gray-700 bg-dark-800/50">
@@ -45,6 +49,20 @@ const InputSignalsForm: React.FC<InputSignalsFormProps> = ({
 								className="w-full p-2.5 bg-dark-900 border border-gray-700 rounded-lg text-white font-mono text-sm focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-colors"
 								disabled={loading}
 							/>
+							{balanceFetching && signal === 'balance' && (
+								<div className="flex items-center gap-1.5 mt-1.5">
+									<div className="w-3 h-3 border-2 border-purple-400/30 border-t-purple-400 rounded-full animate-spin"></div>
+									<span className="text-xs text-gray-500">Fetching wallet balance...</span>
+								</div>
+							)}
+							{autoFilledSignals?.[signal] && !balanceFetching && (
+								<div className="flex items-center gap-1.5 mt-1.5">
+									<svg className="w-3.5 h-3.5 text-green-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+									</svg>
+									<span className="text-xs text-green-400/80">{autoFilledSignals[signal]}</span>
+								</div>
+							)}
 						</div>
 					))}
 				</div>

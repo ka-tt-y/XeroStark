@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT DISTINCT\n                c.id, c.hash, c.name, c.description, c.code,\n                c.circuit_type as \"circuit_type: _\",\n                c.created_by, c.is_public, c.created_at,\n                d.contract_address as deployed_address,\n                d.deployment_type as \"deployment_type?: DeploymentType\",\n                pa.input_signals,\n                pa.input_descriptions\n            FROM circuits c\n            JOIN deployments d ON c.id = d.circuit_id AND d.status = 'confirmed'\n            LEFT JOIN proof_artifacts pa ON c.id = pa.circuit_id\n            WHERE c.is_public = true\n            ORDER BY c.created_at DESC\n            ",
+  "query": "\n            SELECT DISTINCT\n                c.id, c.hash, c.name, c.description, c.code,\n                c.circuit_type as \"circuit_type: _\",\n                c.created_by, c.is_public, c.created_at,\n                d.contract_address as deployed_address,\n                d.deployment_type as \"deployment_type?: DeploymentType\",\n                pa.input_signals,\n                pa.input_descriptions\n            FROM circuits c\n            JOIN deployments d ON c.id = d.circuit_id AND d.status = 'confirmed'\n            LEFT JOIN proof_artifacts pa ON c.id = pa.circuit_id\n            WHERE c.is_public = true\n              AND NOT (c.created_by IS NULL AND c.source_path IS NOT NULL)\n            ORDER BY c.created_at DESC\n            ",
   "describe": {
     "columns": [
       {
@@ -108,5 +108,5 @@
       true
     ]
   },
-  "hash": "3d8234f211b01e020f7123d7b3c096bdb51154af60977e3d9b5c424d084c6164"
+  "hash": "9ce0d3c95b536289cfa7c93d032bb631ccf08dfcd31730104e3efcfe9592cc38"
 }

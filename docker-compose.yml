@@ -55,6 +55,8 @@ services:
       # External services
       AVNU_PAYMASTER_API_KEY: ${AVNU_PAYMASTER_API_KEY}
 
+      GROQ_API_KEY: ${GROQ_API_KEY}
+
       # Frontend URL for generating share links
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
     volumes:

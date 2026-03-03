@@ -58,14 +58,12 @@ impl Fairing for RateLimiter {
         };
 
         // Heavier weight for write endpoints
-        let cost: u32 = if path.contains("/setup")
-            || path.contains("/prove")
-            || path.contains("/verify")
-        {
-            5
-        } else {
-            1
-        };
+        let cost: u32 =
+            if path.contains("/setup") || path.contains("/prove") || path.contains("/verify") {
+                5
+            } else {
+                1
+            };
 
         let mut buckets = self.buckets.lock().await;
         let now = Instant::now();

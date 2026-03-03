@@ -9,13 +9,13 @@ use starknet_rust::accounts::{Account, ExecutionEncoding, SingleOwnerAccount};
 use starknet_rust::core::{
     chain_id,
     types::{
-        contract::{CompiledClass, SierraClass},
         Felt,
+        contract::{CompiledClass, SierraClass},
     },
 };
 use starknet_rust::providers::{
-    jsonrpc::{HttpTransport, JsonRpcClient},
     Provider, Url,
+    jsonrpc::{HttpTransport, JsonRpcClient},
 };
 use starknet_rust::signers::{LocalWallet, SigningKey};
 use tracing::{error, info};
@@ -27,12 +27,9 @@ use tracing::{error, info};
 ///
 /// If the class is already declared, the class hash is computed locally and
 /// returned without sending a transaction.
-pub async fn declare_contract_class(
-    sierra_json: &str,
-    casm_json: &str,
-) -> Result<String, String> {
-    let rpc_url = std::env::var("SEPOLIA_RPC_URL")
-        .map_err(|_| "SEPOLIA_RPC_URL not set".to_string())?;
+pub async fn declare_contract_class(sierra_json: &str, casm_json: &str) -> Result<String, String> {
+    let rpc_url =
+        std::env::var("SEPOLIA_RPC_URL").map_err(|_| "SEPOLIA_RPC_URL not set".to_string())?;
     let rpc_url = rpc_url.trim_matches('"').to_string();
     let private_key = std::env::var("SEPOLIA_ACCOUNT_PRIVATE_KEY")
         .map_err(|_| "SEPOLIA_ACCOUNT_PRIVATE_KEY not set".to_string())?;
@@ -56,7 +53,10 @@ pub async fn declare_contract_class(
     let class_hash = flattened_class.class_hash();
     let class_hash_hex = format!("{:#066x}", class_hash);
     info!("Computed class hash: {}", class_hash_hex);
-    info!("Computed compiled class hash: {:#066x}", compiled_class_hash);
+    info!(
+        "Computed compiled class hash: {:#066x}",
+        compiled_class_hash
+    );
 
     // Create provider
     let provider = JsonRpcClient::new(HttpTransport::new(
@@ -66,9 +66,7 @@ pub async fn declare_contract_class(
     // Check if class is already declared on-chain
     match provider
         .get_class(
-            starknet_rust::core::types::BlockId::Tag(
-                starknet_rust::core::types::BlockTag::Latest,
-            ),
+            starknet_rust::core::types::BlockId::Tag(starknet_rust::core::types::BlockTag::Latest),
             class_hash,
         )
         .await
@@ -141,12 +139,49 @@ pub async fn declare_contract_class(
             }
 
             if !confirmed {
-                error!("Declare transaction not confirmed after {} seconds", max_retries);
+                error!(
+                    "Declare transaction not confirmed after {} seconds",
+                    max_retries
+                );
                 return Err(
                     "Declare transaction submitted but not confirmed within timeout. \
                      Please retry — the class may already be declared."
                         .to_string(),
                 );
+            }
+
+            info!("Verifying class is available via get_class...");
+            let mut class_available = false;
+            for attempt in 1..=10 {
+                match provider
+                    .get_class(
+                        starknet_rust::core::types::BlockId::Tag(
+                            starknet_rust::core::types::BlockTag::Latest,
+                        ),
+                        declare_result.class_hash,
+                    )
+                    .await
+                {
+                    Ok(_) => {
+                        info!("Class verified available after {} attempts", attempt);
+                        class_available = true;
+                        break;
+                    }
+                    Err(_) => {
+                        info!(
+                            "Class not yet available via get_class (attempt {}/10)",
+                            attempt
+                        );
+                        tokio::time::sleep(std::time::Duration::from_secs(1)).await;
+                    }
+                }
+            }
+
+            if !class_available {
+                error!("Class not available via get_class after transaction confirmed");
+                return Err("Class declaration confirmed but class not yet available. \
+                     Please wait a moment and try again."
+                    .to_string());
             }
 
             Ok(class_hash)

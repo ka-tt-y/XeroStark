@@ -1,6 +1,6 @@
+use crate::db::errors::DatabaseError as Error;
 use sqlx::{Pool, Postgres, postgres::PgPoolOptions};
 use tracing::info;
-use crate::db::errors::DatabaseError as Error;
 
 pub struct DatabaseConnection {
     pub username: String,
@@ -37,8 +37,9 @@ impl DatabaseConnection {
         );
         let pool = PgPoolOptions::new()
             .max_connections(self.max_connections)
-            .connect(&database_url).await?;
-       sqlx::migrate!().run(&pool).await?;
+            .connect(&database_url)
+            .await?;
+        sqlx::migrate!().run(&pool).await?;
         Ok(pool)
     }
 
@@ -52,17 +53,15 @@ impl DatabaseConnection {
             .max_lifetime(std::time::Duration::from_secs(5))
             .connect(&admin_db_url)
             .await
-            {
-                Ok(pool) => pool,
-                Err(e) =>  
-                    panic!("Could not connect to admin db: {}", e)
-            };
+        {
+            Ok(pool) => pool,
+            Err(e) => panic!("Could not connect to admin db: {}", e),
+        };
 
-       let query_string = format!("CREATE DATABASE {};", self.db_name);
-       match sqlx::query(&query_string).execute(&admin_pool).await {
-        Ok(_) => info!("Database created"),
-        Err(_) => info!("Database already exist")
-       }
+        let query_string = format!("CREATE DATABASE {};", self.db_name);
+        match sqlx::query(&query_string).execute(&admin_pool).await {
+            Ok(_) => info!("Database created"),
+            Err(_) => info!("Database already exist"),
+        }
     }
-    
 }

@@ -3,12 +3,15 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use rocket::{get, post, http::Status, serde::json::Json, State};
+use rocket::{State, get, http::Status, post, serde::json::Json};
 use tracing::{error, info, warn};
 
-use crate::db::{CircuitTemplate, CircuitWithDeployment, Db, DeploymentWithCircuit, PlatformStats, ProofDetails, ProofWithCircuit};
 use crate::config::AppState;
-use crate::services::cache::{TemplateCache, CircomFile};
+use crate::db::{
+    CircuitTemplate, CircuitWithDeployment, Db, DeploymentWithCircuit, PlatformStats, ProofDetails,
+    ProofWithCircuit,
+};
+use crate::services::cache::{CircomFile, TemplateCache};
 use crate::utils::generate_circuit_description;
 
 /// List all available circuit templates (served from in-memory cache).
@@ -32,11 +35,10 @@ pub async fn fetch_content(
 
     // User-uploaded circuits — fetched from DB on demand
     if let Some(hash) = path_str.strip_prefix("user/") {
-        if let Ok(circuit) = db.get_circuit_record_by_hash(hash).await {
-            if let Some(code) = circuit.code {
+        if let Ok(circuit) = db.get_circuit_record_by_hash(hash).await
+            && let Some(code) = circuit.code {
                 return Ok(Json(code));
             }
-        }
         return Err(Status::NotFound);
     }
 
@@ -54,26 +56,18 @@ pub async fn fetch_content(
 pub async fn get_public_circuits(
     db: &State<Arc<Db>>,
 ) -> Result<Json<Vec<CircuitWithDeployment>>, Status> {
-    db.get_public_circuits()
-        .await
-        .map(Json)
-        .map_err(|e| {
-            error!("Failed to get public circuits: {}", e);
-            Status::InternalServerError
-        })
+    db.get_public_circuits().await.map(Json).map_err(|e| {
+        error!("Failed to get public circuits: {}", e);
+        Status::InternalServerError
+    })
 }
 
 #[get("/stats")]
-pub async fn get_platform_stats(
-    db: &State<Arc<Db>>,
-) -> Result<Json<PlatformStats>, Status> {
-    db.get_platform_stats()
-        .await
-        .map(Json)
-        .map_err(|e| {
-            error!("Failed to get platform stats: {}", e);
-            Status::InternalServerError
-        })
+pub async fn get_platform_stats(db: &State<Arc<Db>>) -> Result<Json<PlatformStats>, Status> {
+    db.get_platform_stats().await.map(Json).map_err(|e| {
+        error!("Failed to get platform stats: {}", e);
+        Status::InternalServerError
+    })
 }
 
 /// Get all circuit templates with AI-generated descriptions.
@@ -108,13 +102,10 @@ pub async fn get_user_circuits(
     address: String,
     db: &State<Arc<Db>>,
 ) -> Result<Json<Vec<CircuitWithDeployment>>, Status> {
-    db.get_user_circuits(&address)
-        .await
-        .map(Json)
-        .map_err(|e| {
-            error!("Failed to get user circuits: {}", e);
-            Status::InternalServerError
-        })
+    db.get_user_circuits(&address).await.map(Json).map_err(|e| {
+        error!("Failed to get user circuits: {}", e);
+        Status::InternalServerError
+    })
 }
 
 #[get("/user/proofs?<address>")]
@@ -122,13 +113,10 @@ pub async fn get_user_proofs(
     address: String,
     db: &State<Arc<Db>>,
 ) -> Result<Json<Vec<ProofWithCircuit>>, Status> {
-    db.get_user_proofs(&address)
-        .await
-        .map(Json)
-        .map_err(|e| {
-            error!("Failed to get user proofs: {}", e);
-            Status::InternalServerError
-        })
+    db.get_user_proofs(&address).await.map(Json).map_err(|e| {
+        error!("Failed to get user proofs: {}", e);
+        Status::InternalServerError
+    })
 }
 
 #[get("/user/deployments?<address>")]
@@ -145,7 +133,46 @@ pub async fn get_user_deployments(
         })
 }
 
-// ── Proof sharing ─────────────────────────────────────────────────────
+/// Get circuit details by hash
+#[derive(serde::Serialize)]
+pub(crate) struct CircuitDetailsResponse {
+    pub circuit_hash: String,
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub deployed_address: Option<String>,
+    pub class_hash: Option<String>,
+    pub input_signals: Option<Vec<String>>,
+    pub output_signals: Option<Vec<String>>,
+    pub input_descriptions: Option<serde_json::Value>,
+    pub output_descriptions: Option<serde_json::Value>,
+}
+
+#[get("/circuit/<circuit_hash>")]
+pub async fn get_circuit_details(
+    circuit_hash: String,
+    db: &State<Arc<Db>>,
+) -> Result<Json<CircuitDetailsResponse>, Status> {
+    match db.get_circuit_by_hash(&circuit_hash).await {
+        Ok(data) => Ok(Json(CircuitDetailsResponse {
+            circuit_hash: data.circuit.hash,
+            name: data.circuit.name,
+            description: data.circuit.description,
+            deployed_address: data
+                .deployment
+                .as_ref()
+                .and_then(|d| d.contract_address.clone()),
+            class_hash: data.deployment.as_ref().and_then(|d| d.class_hash.clone()),
+            input_signals: data.artifact.input_signals,
+            output_signals: data.artifact.output_signals,
+            input_descriptions: data.artifact.input_descriptions,
+            output_descriptions: data.artifact.output_descriptions,
+        })),
+        Err(e) => {
+            error!("Failed to get circuit details for {}: {}", circuit_hash, e);
+            Err(Status::NotFound)
+        }
+    }
+}
 
 #[derive(serde::Serialize)]
 pub(crate) struct ShareProofResponse {
@@ -191,42 +218,65 @@ pub async fn get_shared_proof(
 }
 
 /// Background task to backfill missing descriptions for circuit templates.
-/// Finds the first template missing a description, 
-/// generates it using the code and name, saves it to the DB, and invalidates the cache.
-
-async fn backfill_missing_description(db: &Arc<Db>, cache: &Arc<TemplateCache>, client: &reqwest::Client) -> bool {
+/// Processes up to 5 templates concurrently per invocation.
+async fn backfill_missing_description(
+    db: &Arc<Db>,
+    cache: &Arc<TemplateCache>,
+    client: &reqwest::Client,
+) -> bool {
     let templates = match db.get_circuits().await {
         Ok(t) => t,
         Err(_) => return false,
     };
 
-    let template = match templates
+    let missing: Vec<_> = templates
         .iter()
-        .find(|t| t.description.is_none() && t.code.is_some())
-    {
-        Some(t) => t,
-        None => return false,
-    };
+        .filter(|t| t.description.is_none() && t.code.is_some())
+        .take(5)
+        .collect();
 
-    let name = template.name.as_deref().unwrap_or("Unknown");
-    let code = template.code.as_deref().unwrap_or("");
+    if missing.is_empty() {
+        return false;
+    }
 
-    match generate_circuit_description(client, name, code).await {
-        Ok(desc) => {
-            info!(
-                "Backfilled description for {}: {}",
-                name,
-                &desc[..desc.len().min(80)]
-            );
-            if let Err(e) = db.update_circuit_description(template.id, &desc).await {
-                error!("Failed to save backfilled description for {}: {}", name, e);
+    let mut handles = Vec::new();
+    for template in &missing {
+        let name = template.name.clone().unwrap_or_else(|| "Unknown".to_string());
+        let code = template.code.clone().unwrap_or_default();
+        let id = template.id;
+        let client = client.clone();
+        let db_clone = Arc::clone(db);
+        handles.push(tokio::spawn(async move {
+            match generate_circuit_description(&client, &name, &code).await {
+                Ok(desc) => {
+                    info!(
+                        "Backfilled description for {}: {}",
+                        name,
+                        &desc[..desc.len().min(80)]
+                    );
+                    if let Err(e) = db_clone.update_circuit_description(id, &desc).await {
+                        error!("Failed to save backfilled description for {}: {}", name, e);
+                    }
+                    true
+                }
+                Err(e) => {
+                    warn!("Failed to backfill description for {}: {}", name, e);
+                    false
+                }
             }
-            cache.invalidate(db).await;
-            true
-        }
-        Err(e) => {
-            warn!("Failed to backfill description for {}: {}", name, e);
-            false
+        }));
+    }
+
+    let mut any_success = false;
+    for handle in handles {
+        if let Ok(true) = handle.await {
+            any_success = true;
         }
     }
+
+    if any_success {
+        cache.invalidate(db).await;
+    }
+
+    any_success
 }

@@ -3,7 +3,7 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use rocket::{post, serde::json::Json, State};
+use rocket::{State, post, serde::json::Json};
 use serde::Deserialize;
 use serde_json::{Value, json};
 use tokio::process::Command;
@@ -34,7 +34,12 @@ pub async fn prove(
     let circuit_data = db
         .get_circuit_by_hash(&input.circuit_hash)
         .await
-        .map_err(|_| AppError::not_found(format!("Circuit not found for hash: {}", input.circuit_hash)))?;
+        .map_err(|_| {
+            AppError::not_found(format!(
+                "Circuit not found for hash: {}",
+                input.circuit_hash
+            ))
+        })?;
 
     let wasm_path = PathBuf::from(&circuit_data.artifact.wasm_path);
     let zkey_path = PathBuf::from(&circuit_data.artifact.zkey_path);
@@ -53,8 +58,7 @@ pub async fn prove(
 
     tokio::fs::create_dir_all(&proof_dir).await?;
 
-    tokio::fs::write(&input_path, serde_json::to_string(&input.inputs).unwrap())
-        .await?;
+    tokio::fs::write(&input_path, serde_json::to_string(&input.inputs).unwrap()).await?;
 
     // Generate witness
     let witness_path = proof_dir.join("witness.wtns");
@@ -96,7 +100,10 @@ pub async fn prove(
     if !proof_output.status.success() {
         let stderr = String::from_utf8_lossy(&proof_output.stderr).to_string();
         error!("Proof generation failed: {}", stderr);
-        return Err(AppError::internal(format!("Proof generation failed: {}", stderr)));
+        return Err(AppError::internal(format!(
+            "Proof generation failed: {}",
+            stderr
+        )));
     }
 
     // Prepare vk for calldata generation
@@ -129,7 +136,10 @@ pub async fn prove(
     if !calldata_output.status.success() {
         let stderr = String::from_utf8_lossy(&calldata_output.stderr).to_string();
         error!("garaga gen-calldata failed: {}", stderr);
-        return Err(AppError::internal(format!("Calldata generation failed: {}", stderr)));
+        return Err(AppError::internal(format!(
+            "Calldata generation failed: {}",
+            stderr
+        )));
     } else {
         info!(
             "Generated calldata successfully: {}",

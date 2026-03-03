@@ -89,6 +89,21 @@ export const getSharedProof = (token: string) => get(`/proofs/shared/${token}`);
 // Platform statistics for the home page hero
 export const getStats = () => get('/stats');
 
+// Get circuit details by hash
+export interface CircuitDetails {
+    circuit_hash: string;
+    name: string | null;
+    description: string | null;
+    deployed_address: string | null;
+    class_hash: string | null;
+    input_signals: string[] | null;
+    output_signals: string[] | null;
+    input_descriptions: Record<string, string> | null;
+    output_descriptions: Record<string, string> | null;
+}
+export const getCircuitDetails = (circuitHash: string): Promise<CircuitDetails> => 
+    get(`/circuit/${encodeURIComponent(circuitHash)}`);
+
 // Register a deployment after the user declares and deploys the verifier contract from their wallet
 export const registerDeployment = (data: {
     circuit_hash: string;

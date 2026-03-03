@@ -13,13 +13,13 @@ RUN npm install
 COPY . .
 
 # Build argument for API URL (set at build time)
-ARG VITE_API_URL=http://localhost:8000
+ARG VITE_API_URL=https://xerostark.xyz/
 ENV VITE_API_URL=$VITE_API_URL
 
 # Build the app
 RUN npm run build
 
-# ─── Stage 2: Serve with nginx ─────────────────────────────────────
+# Stage 2: Serve with nginx
 FROM nginx:alpine AS runtime
 
 # Copy custom nginx config

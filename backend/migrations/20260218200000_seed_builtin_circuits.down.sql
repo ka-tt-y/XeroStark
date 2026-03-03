@@ -1,15 +1,8 @@
--- Remove the 9 built-in seed circuits
 DELETE FROM circuits WHERE hash IN (
-    'builtin_hash_preimage_poseidon',
-    'builtin_merkle_proof',
-    'builtin_nullifier',
-    'builtin_private_vote',
-    'builtin_credit_score_range',
-    'builtin_private_transfer',
-    'builtin_balance_threshold',
-    'builtin_age_verification',
-    'builtin_eddsa_signature',
-    'builtin_credit_score_range_simple',
-    'builtin_private_transfer_simple',
-    'builtin_age_verification_accurate'
+    '4aadf3ec4b142ba2bff2d9c904ad97f3349947836701942f02c8a776de4f17e4',
+    'd6ba32fe96e85d3e43308eaac18809382df81133a0cfd4ac6de97b073164c6f7',
+    'b679dd6d6ac9c9232a9acc432e900234c175a79584af1945ee59170d981308ce',
+    '25aa0051febce648f201cf50e91c77f3e9bcef64a2bb4c24c442e29f7ba3eac8',
+    '7fcbaf0140ad8ded2476dd87e7c3c9f2c5ddaebd8a235677b1d1cc53b3f89359',
+    '857056a717921c5936bd42b7f1b674dee7c00c34b6be149326ac54494469b624'
 );

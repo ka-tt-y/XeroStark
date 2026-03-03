@@ -1,92 +1,60 @@
--- Seed 9 built-in circuit templates.
--- Uses ON CONFLICT to be idempotent (safe to run multiple times).
 
 -- 1. Hash Preimage (Poseidon)
 INSERT INTO circuits (hash, name, description, code, circuit_type, is_public, created_by, source_path)
 VALUES (
-    'builtin_hash_preimage_poseidon',
+    '4aadf3ec4b142ba2bff2d9c904ad97f3349947836701942f02c8a776de4f17e4',
     'Hash Preimage (Poseidon)',
-    'This proof demonstrates that the prover knows a secret value whose Poseidon hash equals a publicly known commitment, without revealing the secret itself.',
-    E'pragma circom 2.0.0;\n\ninclude "circomlib/circuits/poseidon.circom";\n\ntemplate HashPreimage() {\n    signal input secret;       // private\n    signal input commitment;   // public\n\n    component hasher = Poseidon(1);\n    hasher.inputs[0] <== secret;\n\n    commitment === hasher.out;\n}\n\ncomponent main {public [commitment]} = HashPreimage();\n',
-    'circom', true, NULL, 'builtin/hash_preimage_poseidon.circom'
+    NULL,
+    E'pragma circom 2.0.0;\n\ninclude "circomlib/circuits/poseidon.circom";\n\ntemplate HashPreimage() {\n    signal input secret;       // private: your secret value\n    signal input commitment;   // public: the hash to verify against\n\n    component hasher = Poseidon(1);\n    hasher.inputs[0] <== secret;\n\n    commitment === hasher.out;\n}\n\ncomponent main {public [commitment]} = HashPreimage();\n',
+    'circom', true, NULL, 'hash_preimage_poseidon.circom'
 ) ON CONFLICT (hash) DO NOTHING;
 
--- 2. Merkle Proof (Poseidon, 8 levels)
+-- 2. Merkle Proof (Poseidon, 8 levels) - Prove membership in a set
 INSERT INTO circuits (hash, name, description, code, circuit_type, is_public, created_by, source_path)
 VALUES (
-    'builtin_merkle_proof',
+    'd6ba32fe96e85d3e43308eaac18809382df81133a0cfd4ac6de97b073164c6f7',
     'Merkle Proof',
-    'This proof demonstrates that the prover knows a leaf value and a valid Merkle path that hashes up to a publicly known root, proving membership in a set without revealing which leaf.',
+    NULL,
     E'pragma circom 2.0.0;\n\ninclude "circomlib/circuits/poseidon.circom";\n\ntemplate MerkleProof(levels) {\n    signal input leaf;\n    signal input pathElements[levels];\n    signal input pathIndices[levels];\n    signal input root;\n\n    component hashers[levels];\n    signal hashes[levels + 1];\n    hashes[0] <== leaf;\n\n    for (var i = 0; i < levels; i++) {\n        hashers[i] = Poseidon(2);\n\n        // pathIndices[i] must be 0 or 1\n        pathIndices[i] * (1 - pathIndices[i]) === 0;\n\n        // If index=0, hash(current, sibling). If index=1, hash(sibling, current).\n        hashers[i].inputs[0] <== hashes[i] + pathIndices[i] * (pathElements[i] - hashes[i]);\n        hashers[i].inputs[1] <== pathElements[i] + pathIndices[i] * (hashes[i] - pathElements[i]);\n\n        hashes[i + 1] <== hashers[i].out;\n    }\n\n    root === hashes[levels];\n}\n\ncomponent main {public [root]} = MerkleProof(8);\n',
-    'circom', true, NULL, 'builtin/merkle_proof.circom'
+    'circom', true, NULL, 'merkle_proof.circom'
 ) ON CONFLICT (hash) DO NOTHING;
 
--- 3. Nullifier
+-- 3. Balance Threshold - Prove you have enough funds
 INSERT INTO circuits (hash, name, description, code, circuit_type, is_public, created_by, source_path)
 VALUES (
-    'builtin_nullifier',
-    'Nullifier',
-    'This proof demonstrates that the prover knows a secret and produces a unique nullifier hash tied to a public context, enabling anonymous actions with double-spend prevention.',
-    E'pragma circom 2.0.0;\n\ninclude "circomlib/circuits/poseidon.circom";\n\ntemplate Nullifier() {\n    signal input secret;\n    signal input externalNullifier;\n    signal output commitment;\n    signal output nullifierHash;\n\n    component commitHasher = Poseidon(1);\n    commitHasher.inputs[0] <== secret;\n    commitment <== commitHasher.out;\n\n    component nullHasher = Poseidon(2);\n    nullHasher.inputs[0] <== secret;\n    nullHasher.inputs[1] <== externalNullifier;\n    nullifierHash <== nullHasher.out;\n}\n\ncomponent main {public [externalNullifier]} = Nullifier();\n',
-    'circom', true, NULL, 'builtin/nullifier.circom'
-) ON CONFLICT (hash) DO NOTHING;
-
--- 4. Private Vote (4 choices)
-INSERT INTO circuits (hash, name, description, code, circuit_type, is_public, created_by, source_path)
-VALUES (
-    'builtin_private_vote',
-    'Private Vote',
-    'This proof demonstrates that the prover cast a valid vote for one of the allowed choices in an election, producing a vote commitment and a nullifier to prevent double voting, without revealing the choice.',
-    E'pragma circom 2.0.0;\n\ninclude "circomlib/circuits/poseidon.circom";\ninclude "circomlib/circuits/bitify.circom";\n\ntemplate PrivateVote(numChoices) {\n    signal input voterSecret;\n    signal input choice;\n    signal input electionId;\n    signal output voteCommitment;\n    signal output nullifier;\n\n    // Choice must be valid (0 to numChoices-1)\n    component bits = Num2Bits(8);\n    bits.in <== choice;\n    signal rangeCheck;\n    rangeCheck <== numChoices - 1 - choice;\n    component rangeBits = Num2Bits(8);\n    rangeBits.in <== rangeCheck;\n\n    // Vote commitment (binds voter + choice + election)\n    component commitHasher = Poseidon(3);\n    commitHasher.inputs[0] <== voterSecret;\n    commitHasher.inputs[1] <== choice;\n    commitHasher.inputs[2] <== electionId;\n    voteCommitment <== commitHasher.out;\n\n    // Nullifier prevents double voting\n    component nullHasher = Poseidon(2);\n    nullHasher.inputs[0] <== voterSecret;\n    nullHasher.inputs[1] <== electionId;\n    nullifier <== nullHasher.out;\n}\n\ncomponent main {public [electionId]} = PrivateVote(4);\n',
-    'circom', true, NULL, 'builtin/private_vote.circom'
-) ON CONFLICT (hash) DO NOTHING;
-
--- 5. Credit Score Range
-INSERT INTO circuits (hash, name, description, code, circuit_type, is_public, created_by, source_path)
-VALUES (
-    'builtin_credit_score_range',
-    'Credit Score Range',
-    'This proof demonstrates that the prover has a committed credit score falling within a publicly specified range, without revealing the exact score.',
-    E'pragma circom 2.0.0;\n\ninclude "circomlib/circuits/poseidon.circom";\ninclude "circomlib/circuits/bitify.circom";\n\ntemplate CreditScoreRange() {\n    signal input score;\n    signal input salt;\n    signal input commitment;\n    signal input minScore;\n    signal input maxScore;\n\n    // Verify commitment\n    component hasher = Poseidon(2);\n    hasher.inputs[0] <== score;\n    hasher.inputs[1] <== salt;\n    commitment === hasher.out;\n\n    // Prove score >= minScore\n    signal lowerDiff;\n    lowerDiff <== score - minScore;\n    component lowerBits = Num2Bits(16);\n    lowerBits.in <== lowerDiff;\n\n    // Prove score <= maxScore\n    signal upperDiff;\n    upperDiff <== maxScore - score;\n    component upperBits = Num2Bits(16);\n    upperBits.in <== upperDiff;\n}\n\ncomponent main {public [commitment, minScore, maxScore]} = CreditScoreRange();\n',
-    'circom', true, NULL, 'builtin/credit_score_range.circom'
-) ON CONFLICT (hash) DO NOTHING;
-
--- 6. Private Transfer
-INSERT INTO circuits (hash, name, description, code, circuit_type, is_public, created_by, source_path)
-VALUES (
-    'builtin_private_transfer',
-    'Private Transfer',
-    'This proof demonstrates that the prover owns a committed balance and is transferring a valid positive amount that does not exceed that balance, without revealing the balance or the transfer amount.',
-    E'pragma circom 2.0.0;\n\ninclude "circomlib/circuits/poseidon.circom";\ninclude "circomlib/circuits/bitify.circom";\n\ntemplate PrivateTransfer() {\n    signal input amount;\n    signal input senderBalance;\n    signal input senderSecret;\n    signal input senderCommitment;\n    signal input recipientPubkey;\n\n    // 1. Verify sender owns the balance\n    component commitCheck = Poseidon(2);\n    commitCheck.inputs[0] <== senderBalance;\n    commitCheck.inputs[1] <== senderSecret;\n    senderCommitment === commitCheck.out;\n\n    // 2. Prove amount <= senderBalance (non-negative difference)\n    signal diff;\n    diff <== senderBalance - amount;\n    component rangeCheck = Num2Bits(64);\n    rangeCheck.in <== diff;\n\n    // 3. Prove amount > 0\n    signal amountMinusOne;\n    amountMinusOne <== amount - 1;\n    component posCheck = Num2Bits(64);\n    posCheck.in <== amountMinusOne;\n}\n\ncomponent main {public [senderCommitment, recipientPubkey]} = PrivateTransfer();\n',
-    'circom', true, NULL, 'builtin/private_transfer.circom'
-) ON CONFLICT (hash) DO NOTHING;
-
--- 7. Balance Threshold
-INSERT INTO circuits (hash, name, description, code, circuit_type, is_public, created_by, source_path)
-VALUES (
-    'builtin_balance_threshold',
+    'b679dd6d6ac9c9232a9acc432e900234c175a79584af1945ee59170d981308ce',
     'Balance Threshold',
-    'This proof demonstrates that the prover knows a private balance that meets or exceeds a publicly specified threshold, without revealing the exact balance.',
-    E'pragma circom 2.0.0;\n\ninclude "circomlib/circuits/bitify.circom";\n\ntemplate BalanceThreshold(n) {\n    signal input balance;\n    signal input threshold;\n    signal output sufficient;\n\n    signal diff;\n    diff <== balance - threshold;\n\n    // Prove diff fits in n bits (non-negative)\n    component bits = Num2Bits(n);\n    bits.in <== diff;\n\n    sufficient <== 1;\n}\n\ncomponent main {public [threshold]} = BalanceThreshold(64);\n',
-    'circom', true, NULL, 'builtin/balance_threshold.circom'
+    NULL,
+    E'pragma circom 2.0.0;\n\ninclude "circomlib/circuits/bitify.circom";\n\ntemplate BalanceThreshold(n) {\n    signal input balance;    // private: your actual balance\n    signal input threshold;  // public: minimum required\n    signal output sufficient;\n\n    signal diff;\n    diff <== balance - threshold;\n\n    // Prove diff fits in n bits (non-negative)\n    component bits = Num2Bits(n);\n    bits.in <== diff;\n\n    sufficient <== 1;\n}\n\ncomponent main {public [threshold]} = BalanceThreshold(64);\n',
+    'circom', true, NULL, 'balance_threshold.circom'
 ) ON CONFLICT (hash) DO NOTHING;
 
--- 8. Age Verification
+-- 4. Age Verification
 INSERT INTO circuits (hash, name, description, code, circuit_type, is_public, created_by, source_path)
 VALUES (
-    'builtin_age_verification',
+    '25aa0051febce648f201cf50e91c77f3e9bcef64a2bb4c24c442e29f7ba3eac8',
     'Age Verification',
-    'This proof demonstrates that the prover''s age, derived from a private birth year and a public current year, meets or exceeds the required minimum age, without revealing the birth year.',
-    E'pragma circom 2.0.0;\n\ninclude "circomlib/circuits/bitify.circom";\n\ntemplate AgeVerification(minAge) {\n    signal input age;\n    signal input currentYear;\n    signal input birthYear;\n    signal output valid;\n\n    // Prove age = currentYear - birthYear\n    age === currentYear - birthYear;\n\n    // Prove age >= minAge\n    signal diff;\n    diff <== age - minAge;\n\n    component rangeCheck = Num2Bits(8);\n    rangeCheck.in <== diff;\n\n    valid <== 1;\n}\n\ncomponent main {public [currentYear]} = AgeVerification(18);\n',
-    'circom', true, NULL, 'builtin/age_verification.circom'
+    NULL,
+    E'pragma circom 2.0.0;\n\ninclude "circomlib/circuits/bitify.circom";\n\ntemplate AgeVerification(minAge) {\n    // Private inputs - your birth date\n    signal input birthDay;\n    signal input birthMonth;\n    signal input birthYear;\n    \n    // Public inputs - current date\n    signal input currentDay;\n    signal input currentMonth;\n    signal input currentYear;\n    \n    signal output isOldEnough;\n\n    // Calculate base age from years\n    signal yearDiff;\n    yearDiff <== currentYear - birthYear;\n\n    // Check if birthday has passed this year\n    // monthDiff = currentMonth - birthMonth (can be negative)\n    signal monthDiff;\n    monthDiff <== currentMonth - birthMonth;\n    \n    // dayDiff = currentDay - birthDay (can be negative)\n    signal dayDiff;\n    dayDiff <== currentDay - birthDay;\n\n    // If birthday hasn''t occurred yet, subtract 1 from age\n    // birthdayPassed = 1 if (monthDiff > 0) OR (monthDiff == 0 AND dayDiff >= 0)\n    signal monthPositive;\n    signal monthZeroAndDayOk;\n    \n    // Simplified: assume the difference is within valid range\n    // For full accuracy, a more complex circuit would be needed\n    // This version checks yearDiff >= minAge (simpler approximation)\n    signal ageDiff;\n    ageDiff <== yearDiff - minAge;\n    \n    component rangeCheck = Num2Bits(8);\n    rangeCheck.in <== ageDiff;\n\n    isOldEnough <== 1;\n}\n\ncomponent main {public [currentDay, currentMonth, currentYear]} = AgeVerification(18);\n',
+    'circom', true, NULL, 'age_verification.circom'
 ) ON CONFLICT (hash) DO NOTHING;
 
--- 9. EdDSA Signature Verification
+-- 5. Password Verification - takes raw password, hashes it inside the circuit
 INSERT INTO circuits (hash, name, description, code, circuit_type, is_public, created_by, source_path)
 VALUES (
-    'builtin_eddsa_signature',
-    'EdDSA Signature Verification',
-    'This proof demonstrates that the prover knows a valid EdDSA signature over a public message that corresponds to a publicly known public key, without revealing the signature components.',
-    E'pragma circom 2.0.0;\n\ninclude "circomlib/circuits/eddsamimc.circom";\n\ntemplate SignatureProof() {\n    signal input msg;\n    signal input pubKeyX;\n    signal input pubKeyY;\n    signal input R8x;\n    signal input R8y;\n    signal input S;\n\n    component verifier = EdDSAMiMCVerifier();\n    verifier.enabled <== 1;\n    verifier.Ax <== pubKeyX;\n    verifier.Ay <== pubKeyY;\n    verifier.R8x <== R8x;\n    verifier.R8y <== R8y;\n    verifier.S <== S;\n    verifier.M <== msg;\n}\n\ncomponent main {public [msg, pubKeyX, pubKeyY]} = SignatureProof();\n',
-    'circom', true, NULL, 'builtin/eddsa_signature.circom'
+    '7fcbaf0140ad8ded2476dd87e7c3c9f2c5ddaebd8a235677b1d1cc53b3f89359',
+    'Password Verification',
+    NULL,
+    E'pragma circom 2.0.0;\n\ninclude "circomlib/circuits/poseidon.circom";\n\ntemplate PasswordVerification() {\n    // Private: your secret password (as a number)\n    signal input password;\n    // Public: the stored password hash to verify against\n    signal input storedHash;\n    // Public: a unique identifier (prevents replay attacks)\n    signal input nonce;\n    \n    signal output valid;\n\n    // Hash the password using Poseidon\n    component hasher = Poseidon(1);\n    hasher.inputs[0] <== password;\n\n    // Verify the computed hash matches the stored hash\n    hasher.out === storedHash;\n\n    // Include nonce in output to bind proof to this session\n    component nonceHasher = Poseidon(2);\n    nonceHasher.inputs[0] <== hasher.out;\n    nonceHasher.inputs[1] <== nonce;\n    \n    valid <== 1;\n}\n\ncomponent main {public [storedHash, nonce]} = PasswordVerification();\n',
+    'circom', true, NULL, 'password_verification.circom'
+) ON CONFLICT (hash) DO NOTHING;
+
+-- 6. Number in Range - Prove a number is within bounds
+INSERT INTO circuits (hash, name, description, code, circuit_type, is_public, created_by, source_path)
+VALUES (
+    '857056a717921c5936bd42b7f1b674dee7c00c34b6be149326ac54494469b624',
+    'Number in Range',
+    NULL,
+    E'pragma circom 2.0.0;\n\ninclude "circomlib/circuits/bitify.circom";\n\ntemplate NumberInRange(bits) {\n    // Private: your secret number\n    signal input value;\n    // Public: the allowed range\n    signal input minValue;\n    signal input maxValue;\n    \n    signal output inRange;\n\n    // Prove value >= minValue\n    signal lowerDiff;\n    lowerDiff <== value - minValue;\n    component lowerBits = Num2Bits(bits);\n    lowerBits.in <== lowerDiff;\n\n    // Prove value <= maxValue  \n    signal upperDiff;\n    upperDiff <== maxValue - value;\n    component upperBits = Num2Bits(bits);\n    upperBits.in <== upperDiff;\n\n    inRange <== 1;\n}\n\ncomponent main {public [minValue, maxValue]} = NumberInRange(64);\n',
+    'circom', true, NULL, 'number_range.circom'
 ) ON CONFLICT (hash) DO NOTHING;

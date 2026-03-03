@@ -24,14 +24,11 @@ async fn rocket() -> Rocket<Build> {
     dotenv::from_filename(".secrets").ok();
     dotenv::dotenv().ok();
 
-    // Uses a simple ptau file for all circuits, since we're not doing any trusted 
+    // Uses a simple ptau file for all circuits, since we're not doing any trusted
     // setup ceremonies or circuit-specific contributions at this time. In the future
     // we may want to support multiple ptau files for different circuit families,
     // but this is sufficient for now.
-    let ptau_path = PathBuf::from(
-        std::env::var("PTAU_PATH")
-            .expect("PTAU_PATH not set"),
-    );
+    let ptau_path = PathBuf::from(std::env::var("PTAU_PATH").expect("PTAU_PATH not set"));
     let app_state = AppState::new(ptau_path);
 
     let db_user = std::env::var("DB_USER").expect("DB_USER not set");
@@ -39,7 +36,6 @@ async fn rocket() -> Rocket<Build> {
     let db_host = std::env::var("DB_HOST").expect("DB_HOST not set");
     let db_port = std::env::var("DB_PORT").expect("DB_PORT not set");
     let db_name = std::env::var("DB_NAME").expect("DB_NAME not set");
-
 
     let connection = DatabaseConnection::new(
         db_user,
@@ -71,7 +67,13 @@ async fn rocket() -> Rocket<Build> {
         .attach(RateLimiter::new(60)) // 60 requests/minute per IP
         .register(
             "/",
-            catchers![bad_request, not_found, unprocessable_entity, too_many_requests, internal_error],
+            catchers![
+                bad_request,
+                not_found,
+                unprocessable_entity,
+                too_many_requests,
+                internal_error
+            ],
         )
         .mount(
             "/api/v1",
@@ -91,6 +93,7 @@ async fn rocket() -> Rocket<Build> {
                 routes::circuits::get_user_deployments,
                 routes::circuits::share_proof,
                 routes::circuits::get_shared_proof,
+                routes::circuits::get_circuit_details,
             ],
         )
         .mount(

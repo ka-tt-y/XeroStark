@@ -3,7 +3,7 @@
 
 use std::sync::Arc;
 
-use rocket::{post, serde::json::Json, State};
+use rocket::{State, post, serde::json::Json};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use tracing::info;
@@ -13,7 +13,10 @@ use crate::db::Db;
 use crate::routes::errors::AppError;
 use crate::routes::response::ApiResponse;
 use crate::services::compiler::{build_and_declare_verifier, compile_and_setup};
-use crate::utils::{extract_input_signals, extract_output_signals, extract_public_input_signals, generate_circuit_description, generate_input_descriptions, generate_output_descriptions};
+use crate::utils::{
+    extract_input_signals, extract_output_signals, extract_public_input_signals,
+    generate_circuit_description, generate_input_descriptions, generate_output_descriptions,
+};
 
 #[post("/setup?<address>&<is_public>&<force_redeploy>", data = "<circuit>")]
 pub async fn setup(
@@ -34,7 +37,7 @@ pub async fn setup(
     info!("Computing hash for the circuit");
     let circuit_hash = format!("{:x}", hasher.finalize());
 
-    // if circuit already exists in DB 
+    // if circuit already exists in DB
     // check if we can skip compilation and just return the verifier and deployment info
     if db.circuit_exists(&circuit_hash).await? {
         info!("Circuit hash exists in database, checking for proof artifacts");
@@ -49,7 +52,11 @@ pub async fn setup(
             // Return cached result if already deployed (and no force redeploy)
             if !deployed_address.is_empty() && !force_redeploy {
                 let vk_json = circuit_data.artifact.vk_json.clone();
-                let input_signals = circuit_data.artifact.input_signals.clone().unwrap_or_default();
+                let input_signals = circuit_data
+                    .artifact
+                    .input_signals
+                    .clone()
+                    .unwrap_or_default();
                 let input_descriptions = circuit_data.artifact.input_descriptions.clone();
                 return Ok(Json(ApiResponse {
                     success: true,
@@ -67,7 +74,11 @@ pub async fn setup(
             // Has artifacts but no deployment — rebuild verifier for client-side deploy
             info!("Circuit has artifacts but no deployment — rebuilding verifier contract");
             let vk_json_str = circuit_data.artifact.vk_json.clone();
-            let input_signals = circuit_data.artifact.input_signals.clone().unwrap_or_default();
+            let input_signals = circuit_data
+                .artifact
+                .input_signals
+                .clone()
+                .unwrap_or_default();
             let input_descriptions = circuit_data.artifact.input_descriptions.clone();
 
             let vk_tmp_path = state
@@ -107,8 +118,7 @@ pub async fn setup(
         .join(format!("vk_{}.json", circuit_hash));
     tokio::fs::write(&vk_tmp_path, &vk_json_str).await?;
 
-    let class_hash =
-        build_and_declare_verifier(state.inner(), &vk_tmp_path, &circuit_hash).await?;
+    let class_hash = build_and_declare_verifier(state.inner(), &vk_tmp_path, &circuit_hash).await?;
     let _ = tokio::fs::remove_file(&vk_tmp_path).await;
 
     // Extract input, output, and public-input signals
@@ -130,20 +140,36 @@ pub async fn setup(
 
     // Generate description + input/output/public-input signal descriptions in parallel
     let (circuit_description, input_descriptions, output_descriptions, public_input_descriptions) = {
-        let desc_fut = generate_circuit_description(&state.http_client, &circuit_name, &circuit_str);
+        let desc_fut =
+            generate_circuit_description(&state.http_client, &circuit_name, &circuit_str);
         let input_desc_fut = if !input_signals.is_empty() {
-            Some(generate_input_descriptions(&state.http_client, &circuit_name, &circuit_str, &input_signals))
+            Some(generate_input_descriptions(
+                &state.http_client,
+                &circuit_name,
+                &circuit_str,
+                &input_signals,
+            ))
         } else {
             None
         };
         let output_desc_fut = if !output_signals.is_empty() {
-            Some(generate_output_descriptions(&state.http_client, &circuit_name, &circuit_str, &output_signals))
+            Some(generate_output_descriptions(
+                &state.http_client,
+                &circuit_name,
+                &circuit_str,
+                &output_signals,
+            ))
         } else {
             None
         };
         // Public input descriptions — reuse the input description generator for only the public subset
         let pub_input_desc_fut = if !public_input_signals.is_empty() {
-            Some(generate_input_descriptions(&state.http_client, &circuit_name, &circuit_str, &public_input_signals))
+            Some(generate_input_descriptions(
+                &state.http_client,
+                &circuit_name,
+                &circuit_str,
+                &public_input_signals,
+            ))
         } else {
             None
         };
@@ -164,7 +190,10 @@ pub async fn setup(
 
         let circuit_desc = match desc_result {
             Ok(desc) => {
-                info!("Generated circuit description: {}", &desc[..desc.len().min(80)]);
+                info!(
+                    "Generated circuit description: {}",
+                    &desc[..desc.len().min(80)]
+                );
                 Some(desc)
             }
             Err(e) => {
@@ -173,7 +202,12 @@ pub async fn setup(
             }
         };
 
-        (circuit_desc, input_desc_result, output_desc_result, pub_input_desc_result)
+        (
+            circuit_desc,
+            input_desc_result,
+            output_desc_result,
+            pub_input_desc_result,
+        )
     };
 
     // Persist circuit + artifacts

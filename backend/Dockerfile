@@ -89,10 +89,7 @@ COPY migrations/ /app/migrations/
 RUN mkdir -p /app/xergo_cache
 
 # Expose Rocket port
-EXPOSE 8000
+EXPOSE 4000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:8000/api/v1/health || exit 1
 
 CMD ["/app/backend"]

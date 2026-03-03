@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poseidon Hash Helper - XeroStark</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e4e4e7;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+        .subtitle {
+            text-align: center;
+            color: #a1a1aa;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .card h2 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: #a78bfa;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #a78bfa;
+        }
+        button {
+            width: 100%;
+            padding: 0.875rem;
+            background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(167, 139, 250, 0.4);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .result {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            word-break: break-all;
+        }
+        .result-label {
+            font-size: 0.875rem;
+            color: #10b981;
+            margin-bottom: 0.25rem;
+        }
+        .result-value {
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.875rem;
+            color: #fff;
+            user-select: all;
+        }
+        .copy-btn {
+            width: auto;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .tab {
+            flex: 1;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #a1a1aa;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab.active {
+            background: rgba(167, 139, 250, 0.2);
+            border-color: #a78bfa;
+            color: #fff;
+        }
+        .tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .hidden {
+            display: none;
+        }
+        .info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        .info-icon {
+            color: #3b82f6;
+            margin-right: 0.5rem;
+        }
+        #loading {
+            text-align: center;
+            padding: 2rem;
+            color: #a1a1aa;
+        }
+        .spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #a78bfa;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Poseidon Hash Helper</h1>
+        <p class="subtitle">Generate inputs for XeroStark ZK proofs</p>
+
+        <div id="loading">
+            <div class="spinner"></div>
+            <p>Loading cryptography library...</p>
+        </div>
+
+        <div id="main" class="hidden">
+            <div class="tabs">
+                <button class="tab active" data-tab="single">Single Value Hash</button>
+                <button class="tab" data-tab="password">Password Hash</button>
+                <button class="tab" data-tab="merkle">Merkle Tree</button>
+            </div>
+
+            <!-- Single Value Hash -->
+            <div id="tab-single" class="card">
+                <h2>Hash a Secret Number</h2>
+                <div class="info">
+                    <span class="info-icon">ℹ️</span>
+                    Enter any secret number. You'll get a "commitment" (hash) to share publicly. 
+                    Keep your secret private - use it when generating proofs.
+                </div>
+                <label for="secret">Your Secret Number</label>
+                <input type="text" id="secret" placeholder="e.g., 123456789">
+                <button id="hash-single" onclick="hashSingle()">Generate Commitment</button>
+                <div id="single-result" class="hidden">
+                    <div class="result">
+                        <div class="result-label">Your Commitment:</div>
+                        <div class="result-value" id="single-commitment"></div>
+                        <button class="copy-btn" onclick="copy('single-commitment')">📋 Copy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Hash -->
+            <div id="tab-password" class="card hidden">
+                <h2>Hash a Password</h2>
+                <div class="info">
+                    <span class="info-icon">ℹ️</span>
+                    Convert your password to a number and generate a hash with salt.
+                    Keep your password and salt private.
+                </div>
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password">
+                <label for="salt">Salt (random number for extra security)</label>
+                <input type="text" id="salt" placeholder="e.g., 987654321 (or leave empty to generate)">
+                <button onclick="hashPassword()">Generate Password Hash</button>
+                <div id="password-result" class="hidden">
+                    <div class="result">
+                        <div class="result-label">Password as Number (private):</div>
+                        <div class="result-value" id="password-number"></div>
+                        <button class="copy-btn" onclick="copy('password-number')">📋 Copy</button>
+                    </div>
+                    <div class="result">
+                        <div class="result-label">Salt (private - save this!):</div>
+                        <div class="result-value" id="password-salt"></div>
+                        <button class="copy-btn" onclick="copy('password-salt')">📋 Copy</button>
+                    </div>
+                    <div class="result">
+                        <div class="result-label">Stored Hash (public):</div>
+                        <div class="result-value" id="password-hash"></div>
+                        <button class="copy-btn" onclick="copy('password-hash')">📋 Copy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Merkle Tree -->
+            <div id="tab-merkle" class="card hidden">
+                <h2>Build Merkle Tree</h2>
+                <div class="info">
+                    <span class="info-icon">ℹ️</span>
+                    Enter a list of values (one per line). You'll get the Merkle root and proof paths.
+                    Use this for whitelist membership proofs.
+                </div>
+                <label for="leaves">Values (one per line, up to 256)</label>
+                <textarea id="leaves" rows="6" placeholder="Enter values, one per line:
+123
+456
+789"></textarea>
+                <label for="leaf-index">Your Position (0-indexed)</label>
+                <input type="number" id="leaf-index" value="0" min="0">
+                <button onclick="buildMerkle()">Generate Merkle Proof</button>
+                <div id="merkle-result" class="hidden">
+                    <div class="result">
+                        <div class="result-label">Merkle Root (public):</div>
+                        <div class="result-value" id="merkle-root"></div>
+                        <button class="copy-btn" onclick="copy('merkle-root')">📋 Copy</button>
+                    </div>
+                    <div class="result">
+                        <div class="result-label">Your Leaf Value:</div>
+                        <div class="result-value" id="merkle-leaf"></div>
+                    </div>
+                    <div class="result">
+                        <div class="result-label">Path Elements (private):</div>
+                        <div class="result-value" id="merkle-path"></div>
+                        <button class="copy-btn" onclick="copy('merkle-path')">📋 Copy</button>
+                    </div>
+                    <div class="result">
+                        <div class="result-label">Path Indices (private):</div>
+                        <div class="result-value" id="merkle-indices"></div>
+                        <button class="copy-btn" onclick="copy('merkle-indices')">📋 Copy</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/circomlibjs@0.1.7/build/circomlibjs.umd.js"></script>
+    <script>
+        let poseidon;
+        let F;
+
+        // Initialize Poseidon
+        async function init() {
+            try {
+                poseidon = await circomlibjs.buildPoseidon();
+                F = poseidon.F;
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('main').classList.remove('hidden');
+            } catch (e) {
+                document.getElementById('loading').innerHTML = 
+                    '<p style="color: #ef4444;">Failed to load library. Please refresh the page.</p>';
+                console.error(e);
+            }
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                const tabName = tab.dataset.tab;
+                document.querySelectorAll('.card').forEach(card => {
+                    card.classList.add('hidden');
+                });
+                document.getElementById('tab-' + tabName).classList.remove('hidden');
+            });
+        });
+
+        // Hash single value
+        function hashSingle() {
+            const secret = document.getElementById('secret').value.trim();
+            if (!secret) {
+                alert('Please enter a secret number');
+                return;
+            }
+
+            try {
+                const secretBigInt = BigInt(secret);
+                const hash = poseidon([secretBigInt]);
+                const commitment = F.toString(hash);
+
+                document.getElementById('single-commitment').textContent = commitment;
+                document.getElementById('single-result').classList.remove('hidden');
+            } catch (e) {
+                alert('Invalid number. Please enter a valid integer.');
+                console.error(e);
+            }
+        }
+
+        // Hash password with salt
+        function hashPassword() {
+            const password = document.getElementById('password').value;
+            let salt = document.getElementById('salt').value.trim();
+
+            if (!password) {
+                alert('Please enter a password');
+                return;
+            }
+
+            // Convert password to number (simple hash of characters)
+            let passwordNum = 0n;
+            for (let i = 0; i < password.length; i++) {
+                passwordNum = passwordNum * 256n + BigInt(password.charCodeAt(i));
+            }
+            // Reduce to fit in field
+            passwordNum = passwordNum % (2n ** 253n);
+
+            // Generate random salt if not provided
+            if (!salt) {
+                salt = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString();
+            }
+
+            try {
+                const saltBigInt = BigInt(salt);
+                const hash = poseidon([passwordNum, saltBigInt]);
+                const storedHash = F.toString(hash);
+
+                document.getElementById('password-number').textContent = passwordNum.toString();
+                document.getElementById('password-salt').textContent = salt;
+                document.getElementById('password-hash').textContent = storedHash;
+                document.getElementById('password-result').classList.remove('hidden');
+            } catch (e) {
+                alert('Error generating hash. Salt must be a valid number.');
+                console.error(e);
+            }
+        }
+
+        // Build Merkle tree
+        function buildMerkle() {
+            const leavesText = document.getElementById('leaves').value.trim();
+            const index = parseInt(document.getElementById('leaf-index').value);
+
+            if (!leavesText) {
+                alert('Please enter at least one value');
+                return;
+            }
+
+            const lines = leavesText.split('\n').map(l => l.trim()).filter(l => l);
+            if (lines.length === 0) {
+                alert('Please enter at least one value');
+                return;
+            }
+
+            if (index < 0 || index >= lines.length) {
+                alert('Invalid position. Must be 0 to ' + (lines.length - 1));
+                return;
+            }
+
+            try {
+                // Convert to BigInt and hash each leaf
+                let leaves = lines.map(l => {
+                    const hash = poseidon([BigInt(l)]);
+                    return hash;
+                });
+
+                // Pad to power of 2
+                const levels = 8;
+                const targetSize = Math.pow(2, levels);
+                while (leaves.length < targetSize) {
+                    leaves.push(poseidon([0n]));
+                }
+
+                // Build tree and collect proof
+                const pathElements = [];
+                const pathIndices = [];
+                let currentIndex = index;
+
+                for (let level = 0; level < levels; level++) {
+                    const siblingIndex = currentIndex % 2 === 0 ? currentIndex + 1 : currentIndex - 1;
+                    pathElements.push(F.toString(leaves[siblingIndex]));
+                    pathIndices.push(currentIndex % 2);
+
+                    // Compute next level
+                    const nextLeaves = [];
+                    for (let i = 0; i < leaves.length; i += 2) {
+                        const hash = poseidon([leaves[i], leaves[i + 1]]);
+                        nextLeaves.push(hash);
+                    }
+                    leaves = nextLeaves;
+                    currentIndex = Math.floor(currentIndex / 2);
+                }
+
+                const root = F.toString(leaves[0]);
+
+                document.getElementById('merkle-root').textContent = root;
+                document.getElementById('merkle-leaf').textContent = lines[index];
+                document.getElementById('merkle-path').textContent = JSON.stringify(pathElements);
+                document.getElementById('merkle-indices').textContent = JSON.stringify(pathIndices);
+                document.getElementById('merkle-result').classList.remove('hidden');
+            } catch (e) {
+                alert('Error building Merkle tree. All values must be valid numbers.');
+                console.error(e);
+            }
+        }
+
+        // Copy to clipboard
+        function copy(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                const original = btn.textContent;
+                btn.textContent = '✓ Copied!';
+                setTimeout(() => btn.textContent = original, 1500);
+            });
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>

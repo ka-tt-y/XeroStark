@@ -1,11 +1,35 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useAccount } from '@starknet-react/core';
 import { useLocation, useNavigate, useParams, Link } from 'react-router-dom';
-import { prove } from '../../api';
+import { RpcProvider } from 'starknet';
+import { prove, getCircuitDetails } from '../../api';
 import Breadcrumb from '../../components/Breadcrumb';
 import Toast, { ToastType } from '../../components/Toast';
 import InputSignalsForm from './components/InputSignalsForm';
 import ProveSidebar from './components/ProveSidebar';
+import PoseidonHelper from './components/PoseidonHelper';
+
+// STRK token on Starknet Sepolia
+const STRK_TOKEN = '0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d';
+const SEPOLIA_RPC = 'https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_10/tPHqpWiSDDnnkqtpd3QEy';
+
+async function fetchSTRKBalance(walletAddress: string): Promise<{ raw: string; display: string }> {
+	const provider = new RpcProvider({ nodeUrl: SEPOLIA_RPC });
+	const result = await provider.callContract({
+		contractAddress: STRK_TOKEN,
+		entrypoint: 'balance_of',
+		calldata: [walletAddress],
+	});
+	const resultArr = Array.isArray(result) ? result : (result as any).result || [];
+	const low = BigInt(resultArr[0] || '0');
+	const high = BigInt(resultArr[1] || '0');
+	const balanceWei = low + (high << 128n);
+	// Convert to whole STRK (18 decimals)
+	const wholeStrk = balanceWei / (10n ** 18n);
+	const remainder = (balanceWei % (10n ** 18n)) / (10n ** 16n); // 2 decimal places
+	const display = `${wholeStrk}.${remainder.toString().padStart(2, '0')} STRK`;
+	return { raw: wholeStrk.toString(), display };
+}
 
 interface ProveResponse {
 	success: boolean;
@@ -23,6 +47,7 @@ interface LocationState {
 	input_descriptions?: Record<string, string>;
 	output_signals?: string[];
 	output_descriptions?: Record<string, string>;
+	name?: string;
 	from?: string;
 }
 
@@ -36,9 +61,67 @@ const Prove: React.FC = () => {
 	const location = useLocation();
 	const navigate = useNavigate();
 	const { circuitHash } = useParams<{ circuitHash: string }>();
-	const state = location.state as LocationState | null;
+	const state_ = location.state as LocationState | null;
 
-	const resolvedHash = circuitHash || state?.circuit_hash || '';
+	const resolvedHash = circuitHash || state_?.circuit_hash || '';
+	
+	// State for fetched circuit data
+	const [fetchedData, setFetchedData] = useState<{
+		deployed_address: string;
+		input_signals: string[];
+		input_descriptions: Record<string, string>;
+		output_signals: string[];
+		output_descriptions: Record<string, string>;
+		name: string | null;
+	} | null>(null);
+	const [fetchError, setFetchError] = useState<string | null>(null);
+	const [fetchLoading, setFetchLoading] = useState(false);
+
+	// Fetch circuit data if not passed via state
+	useEffect(() => {
+		if (!state_?.deployed_address && resolvedHash) {
+			setFetchLoading(true);
+			getCircuitDetails(resolvedHash)
+				.then((data) => {
+					if (data.deployed_address) {
+						setFetchedData({
+							deployed_address: data.deployed_address,
+							input_signals: data.input_signals || [],
+							input_descriptions: data.input_descriptions || {},
+							output_signals: data.output_signals || [],
+							output_descriptions: data.output_descriptions || {},
+							name: data.name || null,
+						});
+					} else {
+						setFetchError('Circuit is not deployed yet. Please complete setup first.');
+					}
+				})
+				.catch((err) => {
+					setFetchError(err.message || 'Failed to load circuit data');
+				})
+				.finally(() => setFetchLoading(false));
+		}
+	}, [resolvedHash, state_?.deployed_address]);
+
+	const state = state_?.deployed_address ? state_ : fetchedData ? {
+		circuit_hash: resolvedHash,
+		deployed_address: fetchedData.deployed_address,
+		input_signals: fetchedData.input_signals,
+		input_descriptions: fetchedData.input_descriptions,
+		output_signals: fetchedData.output_signals,
+		output_descriptions: fetchedData.output_descriptions,
+		name: fetchedData.name ?? undefined,
+	} : null;
+
+	const circuitName = state?.name || null;
+
+	// Detect if circuit uses Poseidon (check signal names for hash-related keywords)
+	const showPoseidonHelper = useMemo(() => {
+		const signals = state?.input_signals || [];
+		const keywords = ['hash', 'commitment', 'secret', 'password', 'poseidon', 'nullifier'];
+		return signals.some(s => keywords.some(k => s.toLowerCase().includes(k)));
+	}, [state?.input_signals]);
+
 	const signalsKey = state?.input_signals?.join('|') ?? '';
 
 	const initialInputs = useMemo(() => {
@@ -63,6 +146,60 @@ const Prove: React.FC = () => {
 	useEffect(() => {
 		setInputValues(initialInputs);
 	}, [initialInputs]);
+
+	// Auto-fetch STRK balance when circuit has a "balance" input signal
+	const [autoFilledSignals, setAutoFilledSignals] = useState<Record<string, string>>({});
+	const [balanceFetching, setBalanceFetching] = useState(false);
+
+	useEffect(() => {
+		const hasBalanceSignal = state?.input_signals?.includes('balance');
+		if (!hasBalanceSignal || !address) return;
+
+		let active = true;
+		setBalanceFetching(true);
+
+		fetchSTRKBalance(address)
+			.then(({ raw, display }) => {
+				if (!active) return;
+				setInputValues(prev => ({ ...prev, balance: raw }));
+				setAutoFilledSignals(prev => ({ ...prev, balance: `${display} from connected wallet` }));
+			})
+			.catch((err) => {
+				console.warn('Failed to fetch STRK balance:', err);
+			})
+			.finally(() => {
+				if (active) setBalanceFetching(false);
+			});
+
+		return () => { active = false; };
+	}, [address, signalsKey]);
+
+	// Loading state while fetching circuit data
+	if (fetchLoading) {
+		return (
+			<div className="min-h-screen flex items-center justify-center">
+				<div className="text-center">
+					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+					<p className="text-gray-400">Loading circuit data...</p>
+				</div>
+			</div>
+		);
+	}
+
+	// Error state
+	if (fetchError) {
+		return (
+			<div className="min-h-screen flex items-center justify-center">
+				<div className="text-center">
+					<h2 className="text-xl font-semibold text-red-400 mb-4">Error</h2>
+					<p className="text-gray-400 mb-6">{fetchError}</p>
+					<Link to="/templates" className="btn btn-primary">
+						Browse Templates
+					</Link>
+				</div>
+			</div>
+		);
+	}
 
 	if (!resolvedHash || !state?.deployed_address) {
 		return (
@@ -145,7 +282,9 @@ const Prove: React.FC = () => {
 					<div className="grid lg:grid-cols-5 gap-6 mt-2">
 						<div className="lg:col-span-3 space-y-5">
 							<div>
-								<h1 className="text-2xl font-bold text-white mb-1">Generate Proof</h1>
+								<h1 className="text-2xl font-bold text-white mb-1">
+									Generate Proof{circuitName ? ` — ${circuitName}` : ''}
+								</h1>
 								<p className="text-gray-400 text-sm">Provide your private inputs to generate a zero-knowledge proof.</p>
 							</div>
 
@@ -156,11 +295,16 @@ const Prove: React.FC = () => {
 								loading={loading}
 								onInputChange={handleInputChange}
 								onSubmit={handleGenerateProof}
+								autoFilledSignals={autoFilledSignals}
+								balanceFetching={balanceFetching}
 							/>
 						</div>
 
 						<ProveSidebar deployedAddress={state.deployed_address} />
 					</div>
+
+					{/* Poseidon Hash Helper — full-width below the form */}
+					{showPoseidonHelper && <PoseidonHelper />}
 				</div>
 			</section>
 

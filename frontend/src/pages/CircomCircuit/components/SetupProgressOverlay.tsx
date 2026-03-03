@@ -13,7 +13,7 @@ interface SetupProgressOverlayProps {
 }
 
 const SetupProgressOverlay: React.FC<SetupProgressOverlayProps> = ({ stages, currentStage, elapsedTime }) => (
-	<div className="absolute inset-0 bg-dark-900/95 backdrop-blur-sm flex items-center justify-center rounded-xl">
+	<div className="fixed inset-0 z-50 bg-dark-900/95 backdrop-blur-sm flex items-center justify-center">
 		<div className="w-full max-w-md px-8">
 			{/* Header */}
 			<div className="text-center mb-8">

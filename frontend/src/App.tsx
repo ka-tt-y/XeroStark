@@ -7,6 +7,7 @@ import CircuitList from './pages/CircomCircuit/CircuitList';
 import CircuitUpload from './pages/CircomCircuit/CircuitUpload';
 import CircuitDetail from './pages/CircomCircuit/CircuitDetail';
 import AvailableCircuits from './pages/CircomCircuit/AvailableCircuits';
+import CircuitDetailPage from './pages/CircomCircuit/CircuitDetailPage';
 import Prove from './pages/CircomCircuit/Prove';
 import Dashboard from './pages/Dashboard/Dashboard';
 import ProofViewer from './pages/ProofViewer/index';
@@ -29,6 +30,7 @@ function App() {
           <Route path="/templates/browse" element={<CircuitList />} />
           <Route path="/templates/upload" element={<CircuitUpload />} />
           <Route path="/circuits" element={<AvailableCircuits />} />
+          <Route path="/circuits/:circuitHash" element={<CircuitDetailPage />} />
           <Route path="/prove/:circuitHash" element={<Prove />} />
           <Route path="/templates/*" element={<CircuitDetail />} />
           <Route path="/dashboard" element={<Dashboard />} />

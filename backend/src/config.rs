@@ -90,8 +90,8 @@ impl AppState {
             .build()
             .expect("Failed to build HTTP client");
 
-        let frontend_url = std::env::var("FRONTEND_URL")
-            .unwrap_or_else(|_| "http://localhost:5173".to_string());
+        let frontend_url =
+            std::env::var("FRONTEND_URL").unwrap_or_else(|_| "http://localhost:5173".to_string());
 
         Self {
             cache_dir: Arc::new(Mutex::new(cache_dir)),

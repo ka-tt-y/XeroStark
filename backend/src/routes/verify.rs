@@ -3,7 +3,7 @@
 
 use std::sync::Arc;
 
-use rocket::{post, serde::json::Json, State};
+use rocket::{State, post, serde::json::Json};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use tokio::process::Command;
@@ -38,7 +38,12 @@ pub async fn verify_onchain(
     let circuit_data = db
         .get_circuit_by_hash(&input.circuit_hash)
         .await
-        .map_err(|_| AppError::not_found(format!("Circuit not found for hash: {}", input.circuit_hash)))?;
+        .map_err(|_| {
+            AppError::not_found(format!(
+                "Circuit not found for hash: {}",
+                input.circuit_hash
+            ))
+        })?;
 
     let deployed_address = circuit_data
         .deployment
@@ -117,14 +122,16 @@ pub async fn verify_onchain(
         let stderr_str = stderr.to_string();
         error!("garaga calldata failed: {}", stderr_str);
         let _ = tokio::fs::remove_dir_all(&verify_dir).await;
-        return Err(AppError::internal(format!("Calldata generation failed: {}", stderr_str)));
+        return Err(AppError::internal(format!(
+            "Calldata generation failed: {}",
+            stderr_str
+        )));
     }
 
     info!("Generated verify calldata successfully");
     let _ = tokio::fs::remove_dir_all(&verify_dir).await;
 
     let calldata: Vec<String> = stdout
-        .trim()
         .split_whitespace()
         .map(|s| s.to_string())
         .collect();
@@ -134,7 +141,9 @@ pub async fn verify_onchain(
             "garaga calldata produced empty output. stdout: {}, stderr: {}",
             stdout, stderr
         );
-        return Err(AppError::internal("Calldata generation produced empty output"));
+        return Err(AppError::internal(
+            "Calldata generation produced empty output",
+        ));
     }
 
     info!(
@@ -152,7 +161,6 @@ pub async fn verify_onchain(
         }),
     }))
 }
-
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RegisterProofInput {
@@ -177,7 +185,12 @@ pub async fn register_proof(
     let circuit_data = db
         .get_circuit_by_hash(&input.circuit_hash)
         .await
-        .map_err(|_| AppError::not_found(format!("Circuit not found for hash: {}", input.circuit_hash)))?;
+        .map_err(|_| {
+            AppError::not_found(format!(
+                "Circuit not found for hash: {}",
+                input.circuit_hash
+            ))
+        })?;
 
     let deployed_address = circuit_data
         .deployment

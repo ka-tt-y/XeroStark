@@ -1,4 +1,4 @@
-use rocket::{post, http::Status, serde::json::Json, State};
+use rocket::{State, http::Status, post, serde::json::Json};
 use serde_json::Value;
 use tracing::{error, info};
 
@@ -22,12 +22,16 @@ pub async fn paymaster_proxy(
     let avnu_url = std::env::var("AVNU_PAYMASTER_URL")
         .unwrap_or_else(|_| "https://sepolia.paymaster.avnu.fi".to_string());
 
-    info!("Proxying paymaster request to {} — method: {:?}",
+    info!(
+        "Proxying paymaster request to {} — method: {:?}",
         avnu_url,
-        body.get("method").and_then(|m| m.as_str()).unwrap_or("unknown")
+        body.get("method")
+            .and_then(|m| m.as_str())
+            .unwrap_or("unknown")
     );
 
-    let response = state.http_client
+    let response = state
+        .http_client
         .post(&avnu_url)
         .header("Content-Type", "application/json")
         .header("x-paymaster-api-key", &api_key)

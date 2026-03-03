@@ -240,7 +240,7 @@ const CircuitUpload: React.FC = () => {
 				deployed_address: existingDeployment.deployed_address,
 				input_signals: existingDeployment.input_signals,
 				input_descriptions: existingDeployment.input_descriptions,
-				from: '/templates/upload',
+				from: `/circuits/${existingDeployment.circuit_hash}`,
 			},
 		});
 	};
@@ -291,12 +291,37 @@ const CircuitUpload: React.FC = () => {
 				account.address,
 			);
 
-			const deployTxResult = await account.executePaymasterTransaction(
-				udcCalls,
-				PAYMASTER_DETAILS,
-			);
+			// Try paymaster (sponsored) deploy with retries — newly declared classes
+			// may not be visible on the paymaster's node immediately.
+			let deployTxResult: { transaction_hash: string } | null = null;
 
-			const deployTxHash = deployTxResult.transaction_hash;
+			for (let attempt = 1; attempt <= 3; attempt++) {
+				try {
+					deployTxResult = await account.executePaymasterTransaction(
+						udcCalls,
+						PAYMASTER_DETAILS,
+					);
+					break; // success
+				} catch (err: unknown) {
+					const payErr = err instanceof Error ? err : new Error(String(err));
+					const msg = payErr.message;
+
+					// Don't retry user rejections
+					if (msg.includes('User abort') || msg.includes('user rejected') || msg.includes('User rejected')) {
+						throw payErr;
+					}
+
+					if (attempt < 3) {
+						console.warn(`Paymaster attempt ${attempt}/3 failed, retrying in ${attempt * 5}s...`, msg);
+						showToast(`Deploy attempt ${attempt} failed — retrying in ${attempt * 5}s...`, 'info');
+						await new Promise(r => setTimeout(r, attempt * 5000));
+					} else {
+						throw payErr;
+					}
+				}
+			}
+
+			const deployTxHash = deployTxResult!.transaction_hash;
 
 			setToast(prev => ({ ...prev, show: false }));
 
@@ -322,7 +347,7 @@ const CircuitUpload: React.FC = () => {
 					input_descriptions: response.input_descriptions,
 					output_signals: response.output_signals,
 					output_descriptions: response.output_descriptions,
-					from: '/templates/upload',
+					from: `/circuits/${response.circuit_hash}`,
 				}
 			});
 		} catch (error: unknown) {
@@ -332,6 +357,8 @@ const CircuitUpload: React.FC = () => {
 				showToast('Transaction was rejected in your wallet.', 'error');
 			} else if (msg.includes('insufficient') || msg.includes('balance')) {
 				showToast('Insufficient STRK balance to cover gas fees. Please fund your wallet and try again.', 'error');
+			} else if (msg.includes('TRANSACTION_EXECUTION_ERROR') || msg.includes('execution call was rejected')) {
+				showToast('Deploy transaction failed. This can happen if the network is still syncing the declared contract. Please wait a minute and try again.', 'error');
 			} else {
 				showToast(msg, 'error');
 			}

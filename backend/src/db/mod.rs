@@ -470,6 +470,7 @@ impl Db {
             JOIN deployments d ON c.id = d.circuit_id AND d.status = 'confirmed'
             LEFT JOIN proof_artifacts pa ON c.id = pa.circuit_id
             WHERE c.is_public = true
+              AND NOT (c.created_by IS NULL AND c.source_path IS NOT NULL)
             ORDER BY c.created_at DESC
             "#,
         )

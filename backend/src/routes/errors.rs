@@ -1,8 +1,8 @@
 //! Centralized error type for route handlers.
 
+use rocket::Request;
 use rocket::http::Status;
 use rocket::response::{self, Responder};
-use rocket::Request;
 
 use crate::routes::response::json_error;
 
@@ -14,15 +14,24 @@ pub struct AppError {
 
 impl AppError {
     pub fn not_found(msg: impl Into<String>) -> Self {
-        Self { status: Status::NotFound, message: msg.into() }
+        Self {
+            status: Status::NotFound,
+            message: msg.into(),
+        }
     }
 
     pub fn bad_request(msg: impl Into<String>) -> Self {
-        Self { status: Status::BadRequest, message: msg.into() }
+        Self {
+            status: Status::BadRequest,
+            message: msg.into(),
+        }
     }
 
     pub fn internal(msg: impl Into<String>) -> Self {
-        Self { status: Status::InternalServerError, message: msg.into() }
+        Self {
+            status: Status::InternalServerError,
+            message: msg.into(),
+        }
     }
 }
 

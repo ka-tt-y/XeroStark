@@ -210,7 +210,7 @@ const CircuitPreview: React.FC<CircuitPreviewProps> = ({
 									<p className="text-sm font-medium text-white">{isPublic ? 'Public Circuit' : 'Private Circuit'}</p>
 									<p className="text-xs text-gray-500">
 										{isPublic
-											? 'Others can see and reuse this circuit as a template'
+											? 'Others can see and reuse this circuit'
 											: 'Only you can see this circuit'}
 									</p>
 								</div>

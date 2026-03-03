@@ -5,7 +5,7 @@ use serde_json::Value;
 use tokio::{fs, process::Command};
 use tracing::info;
 
-const GROQ_MODEL: &str = "openai/gpt-oss-20b";
+const GROQ_MODEL: &str = "llama-3.3-70b-versatile";
 
 /// Extract input signal names from circom circuit code
 /// Returns a vector of signal names (e.g., ["a", "b"])
@@ -159,13 +159,12 @@ pub async fn generate_circuit_description(
         "You are writing a short description for a zero-knowledge proof page.\n\
          \n\
          Analyze the circuit \"{}\" and describe what a proof generated from it PROVES — \
-         from the verifier's perspective.\n\
+         from the verifier's perspective. All in simple human terms\n\
          \n\
          Rules:\n\
          - Focus on what the prover demonstrates knowledge of, without revealing private inputs.\n\
          - Reference the public output(s) if the circuit has them.\n\
          - Example for a Multiplier circuit: \"This proof demonstrates that the prover knows two private numbers that, when multiplied together, produce the public output.\"\n\
-         - Example for a RangeProof circuit: \"RangeProof demonstrates that the prover knows a secret number that falls within a specified range, without revealing the number itself.\"\n\
          - Be concrete and specific to what the code does — identify the input signals and output signals.\n\
          - Maximum 2 sentences, under 80 words.\n\
          - Must not always start with \"This circuit\" or \"This proof\". Make it varied and engaging.\n\
@@ -227,15 +226,20 @@ pub async fn generate_input_descriptions(
     }
 
     let signals_list = input_signals.join(", ");
+    let public_signals = extract_public_input_signals(circuit_code);
+    let public_list = if public_signals.is_empty() {
+        "none".to_string()
+    } else {
+        public_signals.join(", ")
+    };
     let prompt = format!(
-        "You are an expert in zero-knowledge proof circuits written in Circom. \
-         Given the following Circom circuit named \"{}\" with input signals: [{}], \
-         provide a brief one-line description for each input signal explaining what value \
-         the user should enter and what it represents. \
-         Respond ONLY with valid JSON — an object mapping each signal name to its description. \
-         Example format: {{\"a\": \"First number to multiply\", \"b\": \"Second number to multiply\"}}\n\n\
+        "Here is a Circom circuit named \"{}\". The input signals are: [{}]. \
+         Public inputs (visible to verifier): [{}]. All other inputs are private.\n\n\
+         For each input signal, write a short description (under 30 words) explaining \
+         what value to enter in the context of this specific circuit, and whether it's private or public and the format required (e.g., integer, boolean, string). \
+         Respond ONLY with valid JSON mapping signal name to description.\n\n\
          ```circom\n{}\n```",
-        circuit_name, signals_list, circuit_code
+        circuit_name, signals_list, public_list, circuit_code
     );
 
     let body = serde_json::json!({
@@ -316,18 +320,12 @@ pub async fn generate_output_descriptions(
 
     let signals_list = output_signals.join(", ");
     let prompt = format!(
-        "You are an expert in zero-knowledge proof circuits written in Circom. \
-         Analyze the following Circom circuit named \"{}\" and describe what each output signal represents.\n\n\
-         Output signals to describe: [{}]\n\n\
-         For EACH output signal, carefully read the circuit code to understand:\n\
-         1. What computation produces this output value\n\
-         2. What the value means in the context of the circuit's purpose\n\
-         3. For numeric outputs: describe what the number represents (e.g., \"The hash of the input\", \"The sum of all inputs\")\n\
-         4. For boolean/flag outputs (0 or 1): describe exactly what condition makes it 1 vs 0 based on the actual circuit logic\n\n\
-         IMPORTANT: Do NOT give generic descriptions like \"1 if circuit executed successfully\". \
-         Instead, describe the SPECIFIC condition from the circuit code (e.g., \"1 if age >= 18, 0 otherwise\").\n\n\
-         Respond ONLY with valid JSON — an object mapping each signal name to its description.\n\
-         Example: {{\"hash\": \"The Poseidon hash of the secret input\", \"isAdult\": \"1 if the provided age is 18 or older, 0 otherwise\"}}\n\n\
+        "Here is a Circom circuit named \"{}\". Output signals: [{}].\n\n\
+         For each output signal, describe what the verifier learns from it in the context of \
+         this circuit's purpose. If the output is hardcoded to 1, it means the proof itself \
+         only generates when the circuit's constraints are satisfied — describe the specific \
+         condition that must hold (e.g., \"Proof succeeds only if balance >= threshold\"). \
+         Respond ONLY with valid JSON mapping signal name to description.\ngeee\n\
          ```circom\n{}\n```",
         circuit_name, signals_list, circuit_code
     );

@@ -80,7 +80,10 @@ pub async fn compile_and_setup(
             )));
         }
 
-        return Err(AppError::internal(format!("Circuit compilation failed: {}", clean_stderr)));
+        return Err(AppError::internal(format!(
+            "Circuit compilation failed: {}",
+            clean_stderr
+        )));
     }
 
     // Groth16 setup
@@ -100,7 +103,10 @@ pub async fn compile_and_setup(
     if !setup_output.status.success() {
         let stderr = String::from_utf8_lossy(&setup_output.stderr).to_string();
         error!("snarkjs groth16 setup failed: {}", stderr);
-        return Err(AppError::internal(format!("Groth16 setup failed: {}", stderr)));
+        return Err(AppError::internal(format!(
+            "Groth16 setup failed: {}",
+            stderr
+        )));
     }
 
     // Export verification key
@@ -180,7 +186,10 @@ pub async fn build_and_declare_verifier(
     if !scarb_output.status.success() {
         let stderr = String::from_utf8_lossy(&scarb_output.stderr).to_string();
         error!("scarb build failed: {}", stderr);
-        return Err(AppError::internal(format!("Verifier contract build failed: {}", stderr)));
+        return Err(AppError::internal(format!(
+            "Verifier contract build failed: {}",
+            stderr
+        )));
     }
 
     // Read Sierra and CASM artifacts
@@ -221,9 +230,7 @@ fn read_glob_artifact(dir: &Path, pattern: &str, label: &str) -> Result<String, 
         .map_err(|e| AppError::internal(format!("Glob error: {}", e)))?
         .filter_map(Result::ok)
         .next()
-        .ok_or_else(|| {
-            AppError::internal(format!("{} artifact not found after build", label))
-        })?;
+        .ok_or_else(|| AppError::internal(format!("{} artifact not found after build", label)))?;
 
     std::fs::read_to_string(&path).map_err(|e| {
         error!("Failed to read {} artifact: {}", label, e);

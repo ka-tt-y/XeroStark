@@ -194,7 +194,8 @@ const AvailableCircuits: React.FC = () => {
 													deployed_address: circuit.deployed_address,
 													input_signals: circuit.input_signals,
 													input_descriptions: circuit.input_descriptions,
-													from: '/circuits',
+													name: circuit.name,
+													from: `/circuits/${circuit.hash}`,
 												},
 											})}
 											disabled={!circuit.deployed_address}

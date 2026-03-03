@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use rocket::{post, serde::json::Json, State};
+use rocket::{State, post, serde::json::Json};
 use serde::Deserialize;
 use serde_json::{Value, json};
 use tracing::info;
@@ -33,7 +33,12 @@ pub async fn register_deployment(
     let circuit_data = db
         .get_circuit_by_hash(&input.circuit_hash)
         .await
-        .map_err(|_| AppError::not_found(format!("Circuit not found for hash: {}", input.circuit_hash)))?;
+        .map_err(|_| {
+            AppError::not_found(format!(
+                "Circuit not found for hash: {}",
+                input.circuit_hash
+            ))
+        })?;
 
     db.insert_deployment(
         circuit_data.circuit.id,

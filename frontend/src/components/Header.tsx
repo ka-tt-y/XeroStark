@@ -100,10 +100,8 @@ const Header: React.FC = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
-            <div className="w-25 h-15 rounded-lg flex items-center justify-center">
-              <img src="/logo.png" alt="xerostark logo" className="w-25 h-15" />
-            </div>
-            <span className="text-xl font-bold text-white">xerostark</span>
+            
+            <span className="text-xl font-bold text-white">XeroStark</span>
           </Link>
 
           {/* Desktop Navigation */}

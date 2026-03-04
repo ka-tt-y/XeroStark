@@ -69,9 +69,10 @@ const MyProofs: React.FC<MyProofsProps> = ({ address }) => {
 		}
 		try {
 			setSharingId(proofId);
-			const { share_url } = await shareProof(proofId);
-			setShareUrls(prev => ({ ...prev, [proofId]: share_url }));
-			navigator.clipboard.writeText(share_url);
+			const { share_token } = await shareProof(proofId);
+			const url = `${window.location.origin}/proof/${share_token}`;
+			setShareUrls(prev => ({ ...prev, [proofId]: url }));
+			navigator.clipboard.writeText(url);
 			showToast('Link generated & copied!', 'success');
 		} catch (error: unknown) {
 			showToast(error instanceof Error ? error.message : 'Failed to share proof', 'error');

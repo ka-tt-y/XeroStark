@@ -138,8 +138,8 @@ const ProofVerify: React.FC = () => {
 				// Auto-generate share link
 				if (calldataResponse.proof_id) {
 					try {
-						const { share_url } = await shareProof(calldataResponse.proof_id);
-						setShareUrl(share_url);
+						const { share_token } = await shareProof(calldataResponse.proof_id);
+						setShareUrl(`${window.location.origin}/proof/${share_token}`);
 					} catch { /* non-critical */ }
 				}
 				return;
@@ -195,8 +195,8 @@ const ProofVerify: React.FC = () => {
 			// Auto-generate share link
 			if (registerResponse.proof_id) {
 				try {
-					const { share_url } = await shareProof(registerResponse.proof_id);
-					setShareUrl(share_url);
+					const { share_token } = await shareProof(registerResponse.proof_id);
+					setShareUrl(`${window.location.origin}/proof/${share_token}`);
 				} catch { /* non-critical */ }
 			}
 		} catch (error: unknown) {
@@ -212,8 +212,8 @@ const ProofVerify: React.FC = () => {
 		if (!verifyResult?.proof_id) return;
 		try {
 			setSharing(true);
-			const { share_url } = await shareProof(verifyResult.proof_id);
-			setShareUrl(share_url);
+			const { share_token } = await shareProof(verifyResult.proof_id);
+			setShareUrl(`${window.location.origin}/proof/${share_token}`);
 			showToast('Share link generated!', 'success');
 		} catch (error: unknown) {
 			showToast(error instanceof Error ? error.message : 'Failed to generate share link', 'error');

@@ -33,7 +33,7 @@ const SECTION_CONTENT: Record<DocSection, React.ReactNode> = {
             <h3>Prerequisites</h3>
             <ul>
                 <li>A Starknet wallet (Argent or Braavos) installed as a browser extension</li>
-                <li>Some Sepolia testnet ETH for gas fees (deployments and proof verification)</li>
+                <li>No gas needed — all transactions (deploy &amp; verify) are fully sponsored via Avnu paymaster</li>
             </ul>
             <h3>Step 1 — Connect Your Wallet</h3>
             <p>
@@ -41,15 +41,15 @@ const SECTION_CONTENT: Record<DocSection, React.ReactNode> = {
                 installed, you'll be asked to choose one. Make sure you're on the
                 <strong> Starknet Sepolia</strong> testnet.
             </p>
-            <h3>Step 2 — Choose or Upload a Circuit</h3>
+            <h3>Step 2 — Choose a Template or Upload Your Own</h3>
             <p>
-                Go to <strong>Templates</strong> and either browse verified circuits from Circomlib
-                or upload your own <code>.circom</code> file. You can mark your uploaded circuit
+                Go to <strong>Templates</strong> and either browse verified templates from Circomlib
+                or upload your own <code>.circom</code> file. You can mark your uploaded template
                 as public to share it with the community.
             </p>
             <h3>Step 3 — Compile &amp; Deploy</h3>
             <p>
-                After uploading, the Server compiles your circuit, generates a Groth16 verifier
+                After uploading, the platform compiles your circuit, generates a Groth16 verifier
                 contract, and declares the contract class on Starknet. You'll then confirm a
                 <strong> deploy transaction</strong> in your wallet — this deploys the verifier
                 contract on-chain.
@@ -94,17 +94,15 @@ component main = Multiplier();`}</code></pre>
                 This circuit proves you know two numbers <code>a</code> and <code>b</code> whose
                 product equals the public output <code>c</code>.
             </p>
-            <h3>Templates from Circomlib</h3>
+            <h3>Existing Templates</h3>
             <p>
-                Circomlib is the official library of reusable Circom circuits maintained by iden3.
-                It includes hash functions (Poseidon, MiMC), signature verification (EdDSA),
-                comparators, multiplexers, and more. Browse them under <strong>Templates → Browse Templates</strong>.
+               There are a number of existing templates available for use. Browse them under <strong>Templates → Browse Templates</strong>.
             </p>
-            <h3>Uploading Custom Circuits</h3>
+            <h3>Uploading Custom Templates</h3>
             <p>
-                Upload any <code>.circom</code> file via <strong>Templates → Upload Circuit</strong>.
+                Upload any <code>.circom</code> file via <strong>Templates → Upload</strong>.
                 The platform will compile it, extract input signals, and generate a verifier contract.
-                Mark it as <strong>public</strong> to make it available to other users.
+                You can mark your uploaded template as <strong>public</strong> to make it available to other users. Or keep it private for your own use.
             </p>
         </div>
     ),
@@ -123,7 +121,7 @@ component main = Multiplier();`}</code></pre>
                 <li>Select a deployed circuit from <strong>Circuits</strong></li>
                 <li>Fill in the required input signals</li>
                 <li>Click <strong>Generate Proof</strong></li>
-                <li>The Server computes the witness and generates the Groth16 proof</li>
+                <li>The Platform computes the witness and generates the Groth16 proof</li>
             </ol>
             <h3>Sharing Proofs</h3>
             <p>
@@ -145,7 +143,7 @@ component main = Multiplier();`}</code></pre>
             </p>
             <h3>The Verification Flow</h3>
             <ol>
-                <li>Backend generates the proof calldata (formatted for Starknet)</li>
+                <li>The server generates the proof calldata (formatted for Starknet)</li>
                 <li>You sign a transaction in your wallet calling the verifier contract</li>
                 <li>The contract executes the pairing check on-chain</li>
                 <li>If valid, the proof is recorded as <strong>verified</strong></li>
@@ -240,9 +238,9 @@ component main = Multiplier();`}</code></pre>
                 A TypeScript/JavaScript SDK so developers can integrate Xerostark proof generation and verification into their own dApps programmatically, without using the UI.
             </p>
 
-            <h3>🔐 Recursive Proofs</h3>
+            <h3>🔐 Better Error Handling</h3>
             <p>
-                Support for proof composition — verify a proof inside another proof. This unlocks more advanced use cases like rollup verification and multi-step private computations.
+                Improved error messages and debugging tools for circuit compilation, proof generation, and on-chain verification, making it easier to identify and fix issues in your circuits and proofs.
             </p>
 
             <h3>🌐 Mainnet Deployment</h3>

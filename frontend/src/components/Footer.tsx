@@ -9,10 +9,7 @@ const Footer: React.FC = () => {
 					{/* Brand */}
 					<div className="col-span-2 md:col-span-1">
 						<Link to="/" className="flex items-center space-x-2 mb-4">
-							<div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-								<span className="text-white font-bold text-sm">X</span>
-							</div>
-							<span className="text-lg font-bold text-white">xerostark</span>
+							<span className="text-lg font-bold text-white">XeroStark</span>
 						</Link>
 						<p className="text-sm text-gray-400 leading-relaxed">
 							Privacy-first zero-knowledge proof platform built on Starknet.
@@ -30,12 +27,12 @@ const Footer: React.FC = () => {
 							</li>
 							<li>
 								<Link to="/templates/browse" className="text-sm text-gray-400 hover:text-primary transition-colors">
-									Browse Circuits
+									Browse Templates
 								</Link>
 							</li>
 							<li>
-								<Link to="/circuits" className="text-sm text-gray-400 hover:text-primary transition-colors">
-									Available Circuits
+								<Link to="/docs" className="text-sm text-gray-400 hover:text-primary transition-colors">
+									Documentation
 								</Link>
 							</li>
 						</ul>
@@ -46,18 +43,18 @@ const Footer: React.FC = () => {
 						<h4 className="text-sm font-semibold text-white mb-4">Resources</h4>
 						<ul className="space-y-2.5">
 							<li>
-								<Link to="/docs" className="text-sm text-gray-400 hover:text-primary transition-colors">
-									Documentation
-								</Link>
+								<a href="https://www.starknet.io/" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-primary transition-colors">
+									Starknet
+								</a>
+							</li>
+							<li>
+								<a href="https://garaga.gitbook.io/garaga" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-primary transition-colors">
+									Garaga
+								</a>
 							</li>
 							<li>
 								<a href="https://docs.circom.io/" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-primary transition-colors">
 									Circom Docs
-								</a>
-							</li>
-							<li>
-								<a href="https://www.starknet.io/" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-primary transition-colors">
-									Starknet
 								</a>
 							</li>
 						</ul>
@@ -86,7 +83,7 @@ const Footer: React.FC = () => {
 				{/* Bottom Bar */}
 				<div className="pt-3 flex flex-col sm:flex-row items-center justify-between">
 					<p className="text-xs text-gray-500">
-						© 2026 Xerostark. Built on Starknet.
+						© 2026 XeroStark. Built on Starknet.
 					</p>
 				</div>
 			</div>

@@ -6,7 +6,7 @@ const WhyZkSection: React.FC = () => (
 			<div className="max-w-7xl">
 				<h2 className="text-2xl font-bold text-white mb-3">Prove statements without revealing secrets.</h2>
 				<p className="text-gray-400 leading-relaxed mb-10 max-w-2xl">
-					Xerostark leverages Starknet's architecture to make zero-knowledge proof verification
+					XeroStark leverages Starknet's architecture to make zero-knowledge proof verification
 					accessible and affordable. Verifier contracts are generated using{' '}
 					<strong className="text-white">Garaga</strong> — optimized pairing checks
 					in Cairo, Starknet's native smart contract language.
@@ -52,7 +52,7 @@ const FEATURES = [
 	{ title: 'Low Verification Cost', dotColor: 'bg-accent-blue', desc: 'Starknet\'s validity rollup architecture means on-chain verification is significantly cheaper than on L1 Ethereum.' },
 	{ title: 'Permanent & Auditable', dotColor: 'bg-green-400', desc: 'Every verified proof is recorded on-chain. View any verification transaction on Voyager or any Starknet block explorer.' },
 	{ title: 'Sepolia Testnet', dotColor: 'bg-accent-pink', desc: 'Currently live on Starknet Sepolia. Connect with Argent or Braavos to start deploying and verifying proofs.' },
-	{ title: 'Sponsored Gas', dotColor: 'bg-yellow-400', desc: 'Users can deploy and verify proofs without needing No STRK (sepolia). Gas fees are sponsored by the platform on testnet.' },
+	{ title: 'Sponsored Gas', dotColor: 'bg-yellow-400', desc: 'Users can deploy and verify proofs without needing any STRK. All gas fees are fully sponsored via Avnu paymaster on testnet.' },
 	{ title: 'Noir Circuits', dotColor: 'bg-purple-400', badge: 'Coming Soon', desc: 'Support for Noir circuits is on the roadmap — write proofs in Noir and verify them on Starknet alongside Circom.' },
 ];
 

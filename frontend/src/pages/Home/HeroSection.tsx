@@ -20,14 +20,13 @@ const HeroSection: React.FC<HeroSectionProps> = ({ stats }) => (
 		</div>
 		<div className="container-custom py-28 relative">
 			<h1 className="text-6xl font-bold mb-6 max-w-2xl">
-				Verify{' '}
 				<span className="gradient-text">Zero-Knowledge Proofs</span>{' '}
 				<span className="text-white">on Starknet</span>
 			</h1>
 
 			<p className="text-xl text-gray-400 max-w-xl mb-12">
-				Compile Circom circuits, deploy verifier contracts, and prove
-				statements on-chain — all from your browser with your Starknet wallet.
+				Compile circuits. Deploy verifiers. Generate proofs. Verify on-chain.
+				All from your browser, completely gasless, powered by Starknet.
 			</p>
 
 			<div className="flex flex-wrap gap-4 mb-16">

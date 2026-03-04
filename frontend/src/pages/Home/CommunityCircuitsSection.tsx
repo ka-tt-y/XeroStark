@@ -34,12 +34,12 @@ const CommunityCircuitsSection: React.FC<CommunityCircuitsSectionProps> = ({ fea
 				<div className="flex items-center justify-between mb-12">
 					<div>
 						<h2 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
-							Community Circuits
+							Circuits
 							<span className="text-xs font-normal text-gray-500 px-2 py-0.5 bg-dark-800 border border-gray-700 rounded-full">
 								{featured.length}
 							</span>
 						</h2>
-						<p className="text-gray-400">Circuits shared by the community — ready to generate proofs</p>
+						<p className="text-gray-400">Circuits already deployed by the community and ready to use</p>
 					</div>
 					<Link to="/circuits" className="text-primary hover:text-primary-light flex items-center space-x-2 transition-colors">
 						<span>View All</span>

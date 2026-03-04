@@ -2,10 +2,10 @@ import React from 'react';
 
 const HOW_IT_WORKS_STEPS = [
 	{ step: '1', title: 'Write or Choose', desc: 'Pick a circuit template from Circomlib, use a community-shared circuit, or upload your own .circom file.' },
-	{ step: '2', title: 'Compile & Declare', desc: 'The Server compiles your circuit, generates a Groth16 verifier contract, and declares it on Starknet.' },
-	{ step: '3', title: 'Deploy Verifier', desc: 'Confirm a single transaction in your wallet to deploy the verifier contract on-chain.' },
-	{ step: '4', title: 'Generate Proof', desc: 'Enter your private inputs. The Server generates a ZK proof and the calldata for verification.' },
-	{ step: '5', title: 'Verify & Share', desc: 'Submit the proof on-chain. Once verified, share a public link anyone can audit.' },
+	{ step: '2', title: 'Compile & Declare', desc: 'The platform compiles your circuit, generates a Groth16 verifier contract using Garaga, and declares it on Starknet.' },
+	{ step: '3', title: 'Deploy Verifier', desc: 'Confirm a single gasless transaction in your wallet to deploy the verifier contract on-chain.' },
+	{ step: '4', title: 'Generate Proof', desc: 'Enter your private inputs. The platform generates a ZK proof and the calldata for verification.' },
+	{ step: '5', title: 'Verify & Share', desc: 'Submit the proof on-chain — gasless. Once verified, share a public link anyone can audit.' },
 ];
 
 const HowItWorksSection: React.FC = () => (

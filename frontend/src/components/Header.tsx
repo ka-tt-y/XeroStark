@@ -110,7 +110,7 @@ const Header: React.FC = () => {
               Templates
             </Link>
             <Link to="/circuits" className="text-gray-300 hover:text-white transition-colors">
-              Deployed Circuits
+              Circuits
             </Link>
             {address && (
               <Link to="/dashboard" className="text-gray-300 hover:text-white transition-colors">
@@ -197,7 +197,7 @@ const Header: React.FC = () => {
               Templates
             </Link>
             <Link to="/circuits" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2.5 rounded-lg text-gray-300 hover:text-white hover:bg-dark-700 transition-colors">
-              Deployed Circuits
+              Circuits
             </Link>
             {address && (
               <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)} className="px-3 py-2.5 rounded-lg text-gray-300 hover:text-white hover:bg-dark-700 transition-colors">

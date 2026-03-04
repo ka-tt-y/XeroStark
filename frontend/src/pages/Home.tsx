@@ -269,7 +269,7 @@ const Home: React.FC = () => {
               {
                 step: '2',
                 title: 'Compile & Declare',
-                desc: 'The Server compiles your circuit, generates a Groth16 verifier contract, and declares it on Starknet.',
+                desc: 'The Platform compiles your circuit, generates a Groth16 verifier contract, and declares it on Starknet.',
               },
               {
                 step: '3',
@@ -279,7 +279,7 @@ const Home: React.FC = () => {
               {
                 step: '4',
                 title: 'Generate Proof',
-                desc: 'Enter your private inputs. The Server generates a ZK proof and the calldata for verification.',
+                desc: 'Enter your private inputs. The Platform generates a ZK proof and the calldata for verification.',
               },
               {
                 step: '5',
@@ -304,8 +304,8 @@ const Home: React.FC = () => {
         <div className="container-custom">
           <div className="flex items-center justify-between mb-12">
             <div>
-              <h2 className="text-3xl font-bold text-white mb-2">Circuit Templates</h2>
-              <p className="text-gray-400">Verified circuits from Circomlib ready to use</p>
+              <h2 className="text-3xl font-bold text-white mb-2">Circuits</h2>
+              <p className="text-gray-400">Ready to use deployed circuits by the community</p>
             </div>
             <Link to="/templates/browse" className="text-primary hover:text-primary-light flex items-center space-x-2 transition-colors">
               <span>View All</span>
